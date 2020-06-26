@@ -1,4 +1,4 @@
-Did this apprear instead of license??
+//Did this apprear instead of license??
 #include "cu2cl_util.h"
 extern cl_kernel __cu2cl_Kernel_box_blur;
 extern cl_kernel __cu2cl_Kernel_light_edge_detection;

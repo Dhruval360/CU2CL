@@ -1,4 +1,4 @@
-Did this apprear instead of license??
+//Did this apprear instead of license??
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
