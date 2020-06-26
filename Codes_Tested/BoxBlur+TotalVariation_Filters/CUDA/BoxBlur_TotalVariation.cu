@@ -274,23 +274,23 @@ int main()
 	const dim3 blockSize(32, 32, 1);
 	const dim3 gridSize((cols / blockSize.x) + 1, (rows / blockSize.y) + 1, 1);
 
-	separateChannels << <gridSize, blockSize >> > (d_inputImageRGBA, rows, cols, d_red, d_green, d_blue);
+	separateChannels <<<gridSize, blockSize>>> (d_inputImageRGBA, rows, cols, d_red, d_green, d_blue);
 	cudaDeviceSynchronize();
 
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
-	box_blur << <gridSize, blockSize, 0, s1 >> > (d_red, d_redBlurred, rows, cols, filterWidth, divFactor);
-	box_blur << <gridSize, blockSize, 0, s2 >> > (d_green, d_greenBlurred, rows, cols, filterWidth, divFactor);
-	box_blur << <gridSize, blockSize, 0, s3 >> > (d_blue, d_blueBlurred, rows, cols, filterWidth, divFactor);
+	box_blur <<<gridSize, blockSize, 0, s1>>> (d_red, d_redBlurred, rows, cols, filterWidth, divFactor);
+	box_blur <<<gridSize, blockSize, 0, s2>>> (d_green, d_greenBlurred, rows, cols, filterWidth, divFactor);
+	box_blur <<<gridSize, blockSize, 0, s3>>> (d_blue, d_blueBlurred, rows, cols, filterWidth, divFactor);
 
-	light_edge_detection << <gridSize, blockSize, 0, s4 >> > (d_red, d_redlight, rows, cols);
-	light_edge_detection << <gridSize, blockSize, 0, s5 >> > (d_green, d_greenlight, rows, cols);
-	light_edge_detection << <gridSize, blockSize, 0, s6 >> > (d_blue, d_bluelight, rows, cols);
+	light_edge_detection <<<gridSize, blockSize, 0, s4>>> (d_red, d_redlight, rows, cols);
+	light_edge_detection <<<gridSize, blockSize, 0, s5>>> (d_green, d_greenlight, rows, cols);
+	light_edge_detection <<<gridSize, blockSize, 0, s6>>> (d_blue, d_bluelight, rows, cols);
 
 	cudaDeviceSynchronize();
 
-	recombineChannels << <gridSize, blockSize, 0, s1 >> > (d_redBlurred, d_greenBlurred, d_blueBlurred, d_outputImageRGBA, rows, cols);
-	recombineChannels << <gridSize, blockSize, 0, s2 >> > (d_redlight, d_greenlight, d_bluelight, d_outputImageRGBA2, rows, cols);
+	recombineChannels <<<gridSize, blockSize, 0, s1>>> (d_redBlurred, d_greenBlurred, d_blueBlurred, d_outputImageRGBA, rows, cols);
+	recombineChannels <<<gridSize, blockSize, 0, s2>>> (d_redlight, d_greenlight, d_bluelight, d_outputImageRGBA2, rows, cols);
 
 	cudaDeviceSynchronize();
 
