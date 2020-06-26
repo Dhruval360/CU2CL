@@ -16,6 +16,9 @@ cl_kernel __cu2cl_Kernel_histogram_kernel;
 cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
 cl_kernel __cu2cl_Kernel_move_kernel;
 cl_program __cu2cl_Program_redEyeGPU_cu;
+extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
+extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
+extern cl_program __cu2cl_Program_redEYECPU_cu;
 extern const char *progSrc;
 extern size_t progLen;
 

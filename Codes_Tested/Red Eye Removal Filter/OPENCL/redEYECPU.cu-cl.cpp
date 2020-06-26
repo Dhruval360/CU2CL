@@ -13,9 +13,17 @@
 cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
 cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
 cl_program __cu2cl_Program_redEYECPU_cu;
+extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
+extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
+extern cl_kernel __cu2cl_Kernel_histogram_kernel;
+extern cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
+extern cl_kernel __cu2cl_Kernel_move_kernel;
+extern cl_program __cu2cl_Program_redEyeGPU_cu;
 extern const char *progSrc;
 extern size_t progLen;
 
+extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
+extern cl_program __cu2cl_Util_Program;
 extern cl_platform_id __cu2cl_Platform;
 extern cl_device_id __cu2cl_Device;
 extern cl_context __cu2cl_Context;
