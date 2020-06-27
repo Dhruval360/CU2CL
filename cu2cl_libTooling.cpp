@@ -1132,6 +1132,9 @@ void TraverseStmt(Stmt *e, unsigned int indent) {
         }
 
         //Device Management
+        else if(funcName == "cudaDeviceSynchronize"){
+            newExpr = "clFinish()";
+        }
         else if (funcName == "cudaGetDevice") {
             //Replace by assigning current value of clDevice to arg
 	    //TODO Alternatively, this could be queried from the queue with clGetCommandQueueInfo
