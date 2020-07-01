@@ -1,16 +1,5 @@
 
-
-
-
 #include "utils.h-cl.cl"
-
-
-
-
-
-
-
-
 
 #include "loadSaveImage.h-cl.cl"
 
