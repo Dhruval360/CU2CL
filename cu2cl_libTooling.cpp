@@ -367,7 +367,7 @@ typedef std::map<std::string, std::vector<std::pair<FunctionDecl *, SourceTuple 
 typedef std::vector<std::pair<NamedDecl*, SourceTuple *> > FlaggedDeclVec;
 
 bool hasFlaggedDecl(FlaggedDeclVec * vec, NamedDecl * decl) {
-    for (FlaggedDeclVec::iterator itr = vec->begin(); itr != vec->end(); itr++) {
+    for (FlaggedDeclVec::iterator itr = vec->begin(); itr != vec->end(); itr++){
         if (itr->first == decl) return true;
     }
     return false;
@@ -410,7 +410,7 @@ std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
-    if (!OF->TempFilename.empty()) {
+    if(!OF->TempFilename.empty()) {
         SmallString<128> NewOutFile(OF->Filename);
         FM->FixupRelativePath(NewOutFile);
         if (llvm::error_code ec = llvm::sys::fs::rename(OF->TempFilename, NewOutFile.str()))
@@ -488,7 +488,7 @@ void init_time() {
 
 uint64_t get_time() {
     gettimeofday(&endTime, NULL);
-    return (uint64_t) (endTime.tv_sec - startTime.tv_sec) * 1000000 +
+    return (uint64_t) (endTime.tv_sec - startTime.tv_sec)*1000000 +
            (endTime.tv_usec - startTime.tv_usec);
 }
 #endif
@@ -604,7 +604,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     std::stringstream inlineStr;
     std::stringstream errStr;
     inlineStr << "/*";
-    if (expLoc.isValid()) {
+    if (expLoc.isValid()){
         //Tack the source line information onto the diagnostic
         //inlineStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
         errStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
@@ -619,7 +619,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     inlineStr << inline_note << "*/\n";
     errStr << err_note << "\n";
 
-    if (expLoc.isValid()) {
+    if (expLoc.isValid()){
         //print the inline string(s) to the output file
         bool isValid;
         //Buffer the comment for outputing after translation is finished.
@@ -1557,7 +1557,7 @@ private:
         //FIXME: Generate cu2cl_util.cl and the requisite boilerplate
         else if (funcName == "cudaMemset") {
             if (!UsesCUDAMemset) {
-                if (!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
+                if(!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
                 GlobalCFuncs.push_back(CL_MEMSET);
                 GlobalHDecls.push_back(CL_MEMSET_H);
                 GlobalCLFuncs.push_back(CL_MEMSET_KERNEL);
@@ -3480,7 +3480,7 @@ public:
         GlobalCDecls[mainFilename].empty();
         //TODO consider making this default
         // we will almost always need to load a kernel file
-        if (!UsesCU2CLLoadSrc) {
+        if(!UsesCU2CLLoadSrc) {
             GlobalCFuncs.push_back(LOAD_PROGRAM_SOURCE);
             GlobalHDecls.push_back(LOAD_PROGRAM_SOURCE_H);
             UsesCU2CLLoadSrc = true;
@@ -3576,7 +3576,7 @@ public:
             //Handles globally defined C or C++ functions
             if (fd) {
                 //Don't translate explicit template specializations
-                if (fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
+                if(fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
                     if (fd->hasAttr<CUDAGlobalAttr>() || fd->hasAttr<CUDADeviceAttr>()) {
                         //Device function, so rewrite kernel
                         RewriteKernelFunction(fd);
@@ -3938,7 +3938,7 @@ public:
         std::stringstream ss(Add);
         std::string item;
         //Tokenize based on a space character delimiter
-        while (std::getline(ss, item, ' ')) {
+        while(std::getline(ss, item, ' ')) {
             AddV.push_back(item);
         }
     }
@@ -3973,7 +3973,7 @@ std::string parseGCCPaths() {
     tmpPathStr->append(*tmpPath);
     tmpPathStr->append(" 2>&1");
     const char * cmd = tmpPathStr->c_str();
-//  llvm::errs() << "Generated GCC Search command: " << cmd << "\n";
+//	llvm::errs() << "Generated GCC Search command: " << cmd << "\n";
     //run GCC and buffer all the data
     std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
     if (!pipe) return "ERROR";
@@ -3983,7 +3983,7 @@ std::string parseGCCPaths() {
         if (fgets(buffer, 128, pipe.get()) != NULL)
             result += buffer;
     }
-//  llvm::errs() << "GCC Search Output:\n" << result << "\n";
+//	llvm::errs() << "GCC Search Output:\n" << result << "\n";
 
     //Generate a StringRef for simpler search ops
     StringRef parseStr(result);
@@ -4081,7 +4081,7 @@ void replaceVarDecl(DeclaratorDecl *decl, SourceTuple * ST) {
 bool isAncestor(Stmt * ancestor, Stmt * child) {
     if (ancestor == child) return true;
     //else if (ancestor->child_begin() != ancestor->child_end()) {
-    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++) {
+    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++){
         if (isAncestor(*citr, child)) return true;
     }
     return false;
@@ -4148,7 +4148,7 @@ int main(int argc, const char ** argv) {
 
     //After the tools run, we can finalize the global boilerplate
     //If __cu2cl_setDevice is used, we need to initialize the scan variables
-    if (UsesCUDASetDevice) {
+    if(UsesCUDASetDevice) {
         CU2CLInit += "    __cu2cl_AllDevices_size = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices_curr_idx = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices = NULL;\n";
