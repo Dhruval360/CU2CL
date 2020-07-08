@@ -1,4 +1,4 @@
-/*
+/* 
 * CU2CL - A prototype CUDA-to-OpenCL translator built on the Clang compiler infrastructure
 * Version 0.8.0b (beta)
 *
@@ -578,7 +578,7 @@ struct commentBufferNode * tail, * head;
 //WARNING: Not threadsafe at all!
 void bufferComment(SourceLocation loc, std::string str, std::vector<Replacement> *replacements) {
     struct commentBufferNode * n = (struct commentBufferNode *)malloc(sizeof(commentBufferNode));
-    n->s = (char *)malloc(sizeof(char) * (str.length() + 1));
+    n->s = (char *)malloc(sizeof(char)*(str.length()+1));
     str.copy(n->s, str.length());
     n->s[str.length()] = '\0';
     n->l = loc.getPtrEncoding(); n->r = replacements; n->n = NULL;
@@ -642,7 +642,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
 //Convenience method for getting a string of raw text between two SourceLocations
 std::string getStmtText(LangOptions * LO, SourceManager * SM, Stmt *s) {
     SourceLocation a(SM->getExpansionLoc(s->getLocStart())), b(Lexer::getLocForEndOfToken(SourceLocation(SM->getExpansionLoc(s->getLocEnd())), 0,  *SM, *LO));
-    return std::string(SM->getCharacterData(a), SM->getCharacterData(b) - SM->getCharacterData(a));
+    return std::string(SM->getCharacterData(a), SM->getCharacterData(b)-SM->getCharacterData(a));
 }
 //Perform any last-minute checks on the Replacement and add it to the provided list of Replacements
 bool generateReplacement(std::vector<Replacement> &replacements, SourceManager * SM, SourceLocation sloc, int len, StringRef replace) {
@@ -805,7 +805,7 @@ private:
 
 
     std::string getTextFromLocs(SourceLocation a, SourceLocation b) {
-        return std::string(SM->getCharacterData(a), SM->getCharacterData(b) - SM->getCharacterData(a));
+        return std::string(SM->getCharacterData(a), SM->getCharacterData(b)-SM->getCharacterData(a));
     }
 
 
@@ -1727,7 +1727,7 @@ private:
         if (CUDAConstantAttr *constAttr = var->getAttr<CUDAConstantAttr>()) {
             //TODO: 0.9 Do something with __constant__ memory declarations
             //DeclsToTranslate.push_back(std::pair<NamedDecl*, SourceTuple*>((dyn_cast<NamedDecl>(var)), ST));
-            //  return;
+            //return;
             RewriteAttr(constAttr, "", HostReplace);
             if (CUDADeviceAttr *devAttr = var->getAttr<CUDADeviceAttr>())
                 RewriteAttr(devAttr, "", HostReplace);
@@ -2984,7 +2984,71 @@ private:
             //Begin double intrinsics
             //TODO: support double intrinsics
             //Begin integer intrinsics
-            //TODO: support integer intrinsics
+            else if (funcName == "__hadd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "hadd(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__mulhi") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "mul_hi(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__mul24") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "mul24(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__uhadd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "hadd(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__umulhi") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "mul_hi(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__umul24") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "mul24(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__rhadd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "rhadd(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__urhadd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "rhadd(" + newX + ", " + newY + ")";
+            }
+	    //TODO: support remaining
             //Begin type casting intrinsics
             else if (funcName == "__double2float_rd") {
                 Expr *x = ce->getArg(0);
@@ -3034,6 +3098,228 @@ private:
                 std::string newX;
                 RewriteKernelExpr(x, newX);
                 newExpr = "convert_int_rtz(" + newX + ")";
+            }
+        //Begin half comparison functions
+            else if (funcName == "__heq") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isequal(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__hge") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isgreaterequal(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__hgt") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isgreater(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__hisinf") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "isinf(" + newX + ")";
+            }
+            else if (funcName == "__hisnan") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "isnan(" + newX + ")";
+            }
+            else if (funcName == "__hle") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isgreater(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__hlt") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isgreater(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "__hne") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "isgreater(" + newX + ", " + newY + ")";
+            }
+        //TODO: support remaining half comparison function
+        //Begin: half math functions
+            else if (funcName == "hcos") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "cos(" + newX + ")";
+            }
+            else if (funcName == "hexp") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "exp(" + newX + ")";
+            }
+            else if (funcName == "hexp2") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "exp2(" + newX + ")";
+            }
+            else if (funcName == "hexp10") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "exp10(" + newX + ")";
+            }
+            else if (funcName == "hlog") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "log(" + newX + ")";
+            }
+            else if (funcName == "hlog2") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "log2(" + newX + ")";
+            }
+            else if (funcName == "hlog10") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "log10(" + newX + ")";
+            }
+            else if (funcName == "hrsqrt") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "rsqrt(" + newX + ")";
+            }
+            else if (funcName == "hsqrt") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "sqrt(" + newX + ")";
+            }
+            else if (funcName == "hsin") {
+                Expr *x = ce->getArg(0);
+                std::string newX;
+                RewriteKernelExpr(x, newX);
+                newExpr = "sin(" + newX + ")";
+            }
+        //TODO: support remaining half math functions
+        //Begin: atomin functions
+        //Note: Note: include the following in OpenCL program
+        // #pragma OPENCL EXTENSION extension-name : enable
+        // extension-name:
+        // "cl_khr_int64_base_atomics" for : atom_add atom_sub atom_inc
+        // atom_dec atom_xchg atom_cmpxchg
+        // "cl_khr_int64_extended_atomics" for: atom_min atom_max atom_and
+        // atom_or atom_xor"
+            else if (funcName == "atomicAdd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_add(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicSub") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_sub(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicExch") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_xchg(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicMin") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_min(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicMax") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_max(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicInc") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_inc(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicDec") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_dec(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicCAS") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                Expr *z = ce->getArg(2);
+                std::string newX, newY, newZ;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                RewriteKernelExpr(z, newZ);
+                newExpr = "atomic_cmpxchg(" + newX + ", " + newY + ", " + newZ + ")";
+            }
+            else if (funcName == "atomicAnd") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_and(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicOr") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_or(" + newX + ", " + newY + ")";
+            }
+            else if (funcName == "atomicXor") {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "atomic_xor(" + newX + ", " + newY + ")";
             }
             else {
                 //TODO: Make sure every possible function call goes through here, or else we may not get rewrites on interior nested calls.
@@ -3262,7 +3548,7 @@ private:
         }
         if (func->hasAttrs()) {
             //Attributes are stored in reverse order of spelling, get the outermost
-            Attr *attr = *(func->attr_end() - 1);
+            Attr *attr = *(func->attr_end()-1);
             //Some functions have attributes on both prototype and definition.
             // This loop ensures we grab the LAST copy of the first attribute
             int i;
@@ -3323,7 +3609,7 @@ private:
                 endLoc = tempLoc;
             }
         }
-        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), "");
+        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc,endLoc))), "");
     }
 
     //Get rid of a variable declaration
@@ -3342,7 +3628,7 @@ private:
         if (var->hasAttrs()) {
             //Find any __shared__, __constant__, __device__, or other attribs
             //Attributes are stored in reverse order of spelling, get the outermost
-            Attr *attr = *(var->attr_end() - 1);
+            Attr *attr = *(var->attr_end()-1);
             tempLoc = SM->getExpansionLoc(attr->getLocation());
             if (SM->isBeforeInTranslationUnit(tempLoc, startLoc))
                 startLoc = tempLoc;
@@ -3378,7 +3664,7 @@ private:
         }
         //TODO Read ahead to the trailing newline if no active code elements are between it and the semicolon
         // (i.e. remove trailing comments identifying the variable and the newline)
-        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), "");
+        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc,endLoc))), "");
         //replace.push_back(Replacement(*SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), ""));
     }
 
@@ -3875,8 +4161,8 @@ public:
             std::string kernname = kernelNameFilter(includedFile.str()) + "-cl.cl";
             //FIXME: I am not sure why it's calculating one character larger than it should be, but regression tests indicate the static -1 is working
             // We should figure out the root of the problem to guarantee the fix
-            generateReplacement(HostReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end))) - 1, hostname);
-            generateReplacement(KernReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end))) - 1, kernname);
+            generateReplacement(HostReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end)))-1, hostname);
+            generateReplacement(KernReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end)))-1, kernname);
         }
     }
 
