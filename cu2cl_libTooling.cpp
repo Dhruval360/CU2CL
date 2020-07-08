@@ -1308,7 +1308,7 @@ private:
             RewriteHostExpr(event, newEvent);
 
             //If stream == 0, then cl_command_queue == __cu2cl_CommandQueue
-            if (newStream == "0")
+            if (newStream == "0" || stream == NULL || newStream = false)
                 newStream = "__cu2cl_CommandQueue";
             newExpr = "clEnqueueMarker(" + newStream + ", &" + newEvent + ")";
         }
