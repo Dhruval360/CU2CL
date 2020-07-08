@@ -212,10 +212,8 @@ cl_mem d_bluelight;
 	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaEventCreate*/
-	cudaEventCreate(&start);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaEventCreate*/
-	cudaEventCreate(&stop);
+	*&startclCreateUserEvent(__cu2cl_Context, &err);
+	*&stopclCreateUserEvent(__cu2cl_Context, &err);
 
 	clEnqueueMarker(, &start);
 
@@ -245,7 +243,7 @@ cl_mem d_bluelight;
 	*&d_greenlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
 	*&d_bluelight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
 
-	clFinish();
+	clFinish(__cu2cl_CommandQueue);
 
 	const size_t blockSize[3] = {32, 32, 1};
 	const size_t gridSize[3] = {(cols / blockSize.x) + 1, (rows / blockSize.y) + 1, 1};
@@ -260,7 +258,7 @@ clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
 localWorkSize[0] = blockSize;
 globalWorkSize[0] = (gridSize)*localWorkSize[0];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	clFinish();
+	clFinish(__cu2cl_CommandQueue);
 
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
@@ -320,7 +318,7 @@ localWorkSize[0] = blockSize;
 globalWorkSize[0] = (gridSize)*localWorkSize[0];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
-	clFinish();
+	clFinish(__cu2cl_CommandQueue);
 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
@@ -343,7 +341,7 @@ localWorkSize[0] = blockSize;
 globalWorkSize[0] = (gridSize)*localWorkSize[0];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
-	clFinish();
+	clFinish(__cu2cl_CommandQueue);
 
 	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
 	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);

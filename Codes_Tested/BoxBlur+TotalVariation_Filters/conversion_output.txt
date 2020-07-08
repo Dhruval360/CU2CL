@@ -127,8 +127,6 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:241:2: CU2CL Unsupported: Unsupported CUDA call: cudaEventCreate
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:242:2: CU2CL Unsupported: Unsupported CUDA call: cudaEventCreate
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:277:32: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:277:22: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:282:24: CU2CL Note: Fast-tracked dim3 type without cast
@@ -147,7 +145,7 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:292:23: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:33: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:23: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 97 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 101 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu.
 CU2CL DEBUG: Rejected propagation of DeclRefExpr h_inputImageRGBA not matching Decl d_inputImageRGBA

@@ -1138,7 +1138,7 @@ private:
             //Replace with clReleaseContext
             newExpr = "clReleaseContext(__cu2cl_Context)";
         }
-        else if (funcName == "cudaThreadSynchronize" || funcName == "cudaDeviceSynchronize") {
+        else if ((funcName == "cudaThreadSynchronize") || (funcName == "cudaDeviceSynchronize")) {
             //Replace with clFinish
             newExpr = "clFinish(__cu2cl_CommandQueue)";
         }
@@ -1255,7 +1255,9 @@ private:
         else if (funcName == "cudaEventCreate") {
             //Replace with clCreateUserEvent
             Expr *event = cudaCall->getArg(0); 
-            newExpr = "*" + event + "clCreateUserEvent(__cu2cl_Context, &err)" ; 
+            std::string newEvent;
+            RewriteHostExpr(event, newEvent);
+	    newExpr = "*" + newEvent + "clCreateUserEvent(__cu2cl_Context, &err)" ; 
         }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
@@ -1308,7 +1310,7 @@ private:
             RewriteHostExpr(event, newEvent);
 
             //If stream == 0, then cl_command_queue == __cu2cl_CommandQueue
-            if (newStream == "0" || stream == NULL || newStream = false)
+            if (newStream == "0")
                 newStream = "__cu2cl_CommandQueue";
             newExpr = "clEnqueueMarker(" + newStream + ", &" + newEvent + ")";
         }
