@@ -1310,7 +1310,7 @@ private:
             RewriteHostExpr(event, newEvent);
 
             //If stream == 0, then cl_command_queue == __cu2cl_CommandQueue
-            if (newStream == "0")
+            if (newStream == "0" || (newStream.length() == 0)) // As the user need not pass 0 since its a default parameter
                 newStream = "__cu2cl_CommandQueue";
             newExpr = "clEnqueueMarker(" + newStream + ", &" + newEvent + ")";
         }
