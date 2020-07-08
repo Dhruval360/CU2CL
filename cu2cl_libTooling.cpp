@@ -1133,20 +1133,18 @@ private:
         //TODO all CUDA calls return a cudaError_t, so those semantics need to be preserved where possible
         std::string funcName = cudaCall->getDirectCallee()->getNameAsString();
 
-        //Thread Management
+        //Thread and Device Management
         if (funcName == "cudaThreadExit") {
             //Replace with clReleaseContext
             newExpr = "clReleaseContext(__cu2cl_Context)";
         }
-        else if (funcName == "cudaThreadSynchronize") {
+        else if (funcName == "cudaThreadSynchronize" || funcName == "cudaDeviceSynchronize") {
             //Replace with clFinish
             newExpr = "clFinish(__cu2cl_CommandQueue)";
         }
 
-        //Device Management
-        else if (funcName == "cudaDeviceSynchronize") {
-            newExpr = "clFinish()";
-        }
+        //TODO Handle cudaDeviceReset
+
         else if (funcName == "cudaGetDevice") {
             //Replace by assigning current value of clDevice to arg
             //TODO Alternatively, this could be queried from the queue with clGetCommandQueueInfo
@@ -1195,7 +1193,7 @@ private:
         else if (funcName == "cudaSetDeviceFlags") {
             //Remove for now, as OpenCL has no device flags to set
             //TODO: emit a note with the device flags
-            newExpr = "";
+            newExpr = "//OpenCL has no device flags to set";
         }
         else if (funcName == "cudaGetDeviceProperties") {
             //Replace with __cu2cl_GetDeviceProperties
@@ -1254,11 +1252,11 @@ private:
         }
 
         //Event Management
-        //else if (funcName == "cudaEventCreate") {
-        //TODO: Replace with clCreateUserEvent
-        //Remove the call
-        //    newExpr = "";
-        //}
+        else if (funcName == "cudaEventCreate") {
+            //Replace with clCreateUserEvent
+            Expr *event = cudaCall->getArg(0); 
+            newExpr = "*" + event + "clCreateUserEvent(__cu2cl_Context, &err)" ; 
+        }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
         //Remove the call

@@ -5,7 +5,7 @@
 *
 *    This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 *
-*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 #include "cu2cl_util.h"
 extern cl_kernel __cu2cl_Kernel_box_blur;
@@ -13,7 +13,7 @@ extern cl_kernel __cu2cl_Kernel_light_edge_detection;
 extern cl_kernel __cu2cl_Kernel_separateChannels;
 extern cl_kernel __cu2cl_Kernel_recombineChannels;
 extern cl_program __cu2cl_Program_BoxBlur_TotalVariation_cu;
-const char *progSrc;
+const char* progSrc;
 size_t progLen;
 
 cl_platform_id __cu2cl_Platform;
@@ -23,26 +23,26 @@ cl_command_queue __cu2cl_CommandQueue;
 
 size_t globalWorkSize[3];
 size_t localWorkSize[3];
-size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc) {
-    FILE *f = fopen(filename, "r");
+size_t __cu2cl_LoadProgramSource(const char* filename, const char** progSrc) {
+    FILE* f = fopen(filename, "r");
     fseek(f, 0, SEEK_END);
-    size_t len = (size_t) ftell(f);
-    *progSrc = (const char *) malloc(sizeof(char)*len);
+    size_t len = (size_t)ftell(f);
+    *progSrc = (const char*)malloc(sizeof(char) * len);
     rewind(f);
-    fread((void *) *progSrc, len, 1, f);
+    fread((void*)*progSrc, len, 1, f);
     fclose(f);
     return len;
 }
 
 
-cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end) {
+cl_int __cu2cl_EventElapsedTime(float* ms, cl_event start, cl_event end) {
     cl_int ret;
     cl_ulong s, e;
     float fs, fe;
     ret |= clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &s, NULL);
     ret |= clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &e, NULL);
     s = e - s;
-    *ms = ((float) s)/1000000.0;
+    *ms = ((float)s) / 1000000.0;
     return ret;
 }
 
