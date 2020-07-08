@@ -5,7 +5,7 @@
 *
 *    This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 *
-*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -18,16 +18,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-	void __cu2cl_Init();
+void __cu2cl_Init();
 
-	void __cu2cl_Cleanup();
-	size_t __cu2cl_LoadProgramSource(const char* filename, const char** progSrc);
+void __cu2cl_Cleanup();
+size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
-	cl_int __cu2cl_EventElapsedTime(float* ms, cl_event start, cl_event end);
+cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end);
 
-	void __cu2cl_Init_BoxBlur_TotalVariation_cu();
+void __cu2cl_Init_BoxBlur_TotalVariation_cu();
 
-	void __cu2cl_Cleanup_BoxBlur_TotalVariation_cu();
+void __cu2cl_Cleanup_BoxBlur_TotalVariation_cu();
 
 
 #ifdef __cplusplus
