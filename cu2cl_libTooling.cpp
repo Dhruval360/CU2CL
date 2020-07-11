@@ -1,4 +1,4 @@
-/* 
+/*
 * CU2CL - A prototype CUDA-to-OpenCL translator built on the Clang compiler infrastructure
 * Version 0.8.0b (beta)
 *
@@ -320,6 +320,102 @@
     "   }\n" \
     "}\n\n"
 
+
+#define CU2CL_SET_DEVICE \
+    "void __cu2cl_SetDevice(cl_uint devID) {\n" \
+    "   if (__cu2cl_AllDevices_size == 0) {\n" \
+    "       __cu2cl_ScanDevices();\n" \
+    "   }\n" \
+    "   //only switch devices if it's a valid choice\n" \
+    "   if (devID < __cu2cl_AllDevices_size) {\n" \
+    "       //Assume auto-initialized queue and context, and free them\n" \
+    "       clReleaseCommandQueue(__cu2cl_CommandQueue);\n" \
+    "       clReleaseContext(__cu2cl_Context);\n" \
+    "       //update device and platform references\n" \
+    "       __cu2cl_AllDevices_curr_idx = devID;\n" \
+    "       __cu2cl_Device = __cu2cl_AllDevices[devID];\n" \
+    "       clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &__cu2cl_Platform, NULL);\n" \
+    "       //and make a new context and queue for the selected device\n" \
+    "       __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);\n" \
+    "       __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);\n" \
+    "   }\n" \
+    "}\n\n"
+
+#define CU2CL_ERROR_HANDLING\
+    "const char *getErrorString(cl_int error){\n"\
+"switch(error){\n"\
+    "// run-time and JIT compiler errors\n"\
+    "\tcase 0: return \"CL_SUCCESS\";\n"\
+    "\tcase -1: return \"CL_DEVICE_NOT_FOUND\";\n"\
+    "\tcase -2: return \"CL_DEVICE_NOT_AVAILABLE\";\n"\
+    "\tcase -3: return \"CL_COMPILER_NOT_AVAILABLE\";\n"\
+    "\tcase -4: return \"CL_MEM_OBJECT_ALLOCATION_FAILURE\";\n"\
+    "\tcase -5: return \"CL_OUT_OF_RESOURCES\";\n"\
+    "\tcase -6: return \"CL_OUT_OF_HOST_MEMORY\";\n"\
+    "\tcase -7: return \"CL_PROFILING_INFO_NOT_AVAILABLE\";\n"\
+    "\tcase -8: return \"CL_MEM_COPY_OVERLAP\";\n"\
+    "\tcase -9: return \"CL_IMAGE_FORMAT_MISMATCH\";\n"\
+    "\tcase -10: return \"CL_IMAGE_FORMAT_NOT_SUPPORTED\";\n"\
+    "\tcase -11: return \"CL_BUILD_PROGRAM_FAILURE\";\n"\
+    "\tcase -12: return \"CL_MAP_FAILURE\";\n"\
+    "\tcase -13: return \"CL_MISALIGNED_SUB_BUFFER_OFFSET\";\n"\
+    "\tcase -14: return \"CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST\";\n"\
+    "\tcase -15: return \"CL_COMPILE_PROGRAM_FAILURE\";\n"\
+    "\tcase -16: return \"CL_LINKER_NOT_AVAILABLE\";\n"\
+    "\tcase -17: return \"CL_LINK_PROGRAM_FAILURE\";\n"\
+    "\tcase -18: return \"CL_DEVICE_PARTITION_FAILED\";\n"\
+    "\tcase -19: return \"CL_KERNEL_ARG_INFO_NOT_AVAILABLE\";\n"\
+    "\t// compile-time errors\n"\
+    "\tcase -30: return \"CL_INVALID_VALUE\";\n"\
+    "\tcase -31: return \"CL_INVALID_DEVICE_TYPE\";\n"\
+    "\tcase -32: return \"CL_INVALID_PLATFORM\";\n"\
+    "\tcase -33: return \"CL_INVALID_DEVICE\";\n"\
+    "\tcase -34: return \"CL_INVALID_CONTEXT\";\n"\
+    "\tcase -35: return \"CL_INVALID_QUEUE_PROPERTIES\";\n"\
+    "\tcase -36: return \"CL_INVALID_COMMAND_QUEUE\";\n"\
+    "\tcase -37: return \"CL_INVALID_HOST_PTR\";\n"\
+    "\tcase -38: return \"CL_INVALID_MEM_OBJECT\";\n"\
+    "\tcase -39: return \"CL_INVALID_IMAGE_FORMAT_DESCRIPTOR\";\n"\
+    "\tcase -40: return \"CL_INVALID_IMAGE_SIZE\";\n"\
+    "\tcase -41: return \"CL_INVALID_SAMPLER\";\n"\
+    "\tcase -42: return \"CL_INVALID_BINARY\";\n"\
+    "\tcase -43: return \"CL_INVALID_BUILD_OPTIONS\";\n"\
+    "\tcase -44: return \"CL_INVALID_PROGRAM\";\n"\
+    "\tcase -45: return \"CL_INVALID_PROGRAM_EXECUTABLE\";\n"\
+    "\tcase -46: return \"CL_INVALID_KERNEL_NAME\";\n"\
+    "\tcase -47: return \"CL_INVALID_KERNEL_DEFINITION\";\n"\
+    "\tcase -48: return \"CL_INVALID_KERNEL\";\n"\
+    "\tcase -49: return \"CL_INVALID_ARG_INDEX\";\n"\
+    "\tcase -50: return \"CL_INVALID_ARG_VALUE\";\n"\
+    "\tcase -51: return \"CL_INVALID_ARG_SIZE\";\n"\
+    "\tcase -52: return \"CL_INVALID_KERNEL_ARGS\";\n"\
+    "\tcase -53: return \"CL_INVALID_WORK_DIMENSION\";\n"\
+    "\tcase -54: return \"CL_INVALID_WORK_GROUP_SIZE\";\n"\
+    "\tcase -55: return \"CL_INVALID_WORK_ITEM_SIZE\";\n"\
+    "\tcase -56: return \"CL_INVALID_GLOBAL_OFFSET\";\n"\
+    "\tcase -57: return \"CL_INVALID_EVENT_WAIT_LIST\";\n"\
+    "\tcase -58: return \"CL_INVALID_EVENT\";\n"\
+    "\tcase -59: return \"CL_INVALID_OPERATION\";\n"\
+    "\tcase -60: return \"CL_INVALID_GL_OBJECT\";\n"\
+    "\tcase -61: return \"CL_INVALID_BUFFER_SIZE\";\n"\
+    "\tcase -62: return \"CL_INVALID_MIP_LEVEL\";\n"\
+    "\tcase -63: return \"CL_INVALID_GLOBAL_WORK_SIZE\";\n"\
+    "\tcase -64: return \"CL_INVALID_PROPERTY\";\n"\
+    "\tcase -65: return \"CL_INVALID_IMAGE_DESCRIPTOR\";\n"\
+    "\tcase -66: return \"CL_INVALID_COMPILER_OPTIONS\";\n"\
+    "\tcase -67: return \"CL_INVALID_LINKER_OPTIONS\";\n"\
+    "\tcase -68: return \"CL_INVALID_DEVICE_PARTITION_COUNT\";\n"\
+    "\t// extension errors\n"\
+    "\tcase -1000: return \"CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR\";\n"\
+    "\tcase -1001: return \"CL_PLATFORM_NOT_FOUND_KHR\";\n"\
+    "\tcase -1002: return \"CL_INVALID_D3D10_DEVICE_KHR\";\n"\
+    "\tcase -1003: return \"CL_INVALID_D3D10_RESOURCE_KHR\";\n"\
+    "\tcase -1004: return \"CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR\";\n"\
+    "\tcase -1005: return \"CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR\";\n"\
+    "\tdefault: return \"Unknown OpenCL error\";\n"\
+    "}\n}\n\n"
+
+
 using namespace clang;
 using namespace clang::tooling;
 using namespace llvm::sys::path;
@@ -367,7 +463,7 @@ typedef std::map<std::string, std::vector<std::pair<FunctionDecl *, SourceTuple 
 typedef std::vector<std::pair<NamedDecl*, SourceTuple *> > FlaggedDeclVec;
 
 bool hasFlaggedDecl(FlaggedDeclVec * vec, NamedDecl * decl) {
-    for (FlaggedDeclVec::iterator itr = vec->begin(); itr != vec->end(); itr++){
+    for (FlaggedDeclVec::iterator itr = vec->begin(); itr != vec->end(); itr++) {
         if (itr->first == decl) return true;
     }
     return false;
@@ -410,7 +506,7 @@ std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
-    if(!OF->TempFilename.empty()) {
+    if (!OF->TempFilename.empty()) {
         SmallString<128> NewOutFile(OF->Filename);
         FM->FixupRelativePath(NewOutFile);
         if (llvm::error_code ec = llvm::sys::fs::rename(OF->TempFilename, NewOutFile.str()))
@@ -488,7 +584,7 @@ void init_time() {
 
 uint64_t get_time() {
     gettimeofday(&endTime, NULL);
-    return (uint64_t) (endTime.tv_sec - startTime.tv_sec)*1000000 +
+    return (uint64_t) (endTime.tv_sec - startTime.tv_sec) * 1000000 +
            (endTime.tv_usec - startTime.tv_usec);
 }
 #endif
@@ -578,7 +674,7 @@ struct commentBufferNode * tail, * head;
 //WARNING: Not threadsafe at all!
 void bufferComment(SourceLocation loc, std::string str, std::vector<Replacement> *replacements) {
     struct commentBufferNode * n = (struct commentBufferNode *)malloc(sizeof(commentBufferNode));
-    n->s = (char *)malloc(sizeof(char)*(str.length()+1));
+    n->s = (char *)malloc(sizeof(char) * (str.length() + 1));
     str.copy(n->s, str.length());
     n->s[str.length()] = '\0';
     n->l = loc.getPtrEncoding(); n->r = replacements; n->n = NULL;
@@ -604,7 +700,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     std::stringstream inlineStr;
     std::stringstream errStr;
     inlineStr << "/*";
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //Tack the source line information onto the diagnostic
         //inlineStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
         errStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
@@ -619,7 +715,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     inlineStr << inline_note << "*/\n";
     errStr << err_note << "\n";
 
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //print the inline string(s) to the output file
         bool isValid;
         //Buffer the comment for outputing after translation is finished.
@@ -642,7 +738,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
 //Convenience method for getting a string of raw text between two SourceLocations
 std::string getStmtText(LangOptions * LO, SourceManager * SM, Stmt *s) {
     SourceLocation a(SM->getExpansionLoc(s->getLocStart())), b(Lexer::getLocForEndOfToken(SourceLocation(SM->getExpansionLoc(s->getLocEnd())), 0,  *SM, *LO));
-    return std::string(SM->getCharacterData(a), SM->getCharacterData(b)-SM->getCharacterData(a));
+    return std::string(SM->getCharacterData(a), SM->getCharacterData(b) - SM->getCharacterData(a));
 }
 //Perform any last-minute checks on the Replacement and add it to the provided list of Replacements
 bool generateReplacement(std::vector<Replacement> &replacements, SourceManager * SM, SourceLocation sloc, int len, StringRef replace) {
@@ -805,7 +901,7 @@ private:
 
 
     std::string getTextFromLocs(SourceLocation a, SourceLocation b) {
-        return std::string(SM->getCharacterData(a), SM->getCharacterData(b)-SM->getCharacterData(a));
+        return std::string(SM->getCharacterData(a), SM->getCharacterData(b) - SM->getCharacterData(a));
     }
 
 
@@ -1254,10 +1350,10 @@ private:
         //Event Management
         else if (funcName == "cudaEventCreate") {
             //Replace with clCreateUserEvent
-            Expr *event = cudaCall->getArg(0); 
+            Expr *event = cudaCall->getArg(0);
             std::string newEvent;
             RewriteHostExpr(event, newEvent);
-	        newExpr = newEvent[0] == '&' ? newEvent.substr(1) : ('*' + newEvent) + " = clCreateUserEvent(__cu2cl_Context, &err)" ; // This is because the input to cudaEventCreate is the address of the event variable
+            newExpr = newEvent[0] == '&' ? newEvent.substr(1) : ('*' + newEvent) + " = clCreateUserEvent(__cu2cl_Context, &err)" ; // This is because the input to cudaEventCreate is the address of the event variable
         }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
@@ -1557,7 +1653,7 @@ private:
         //FIXME: Generate cu2cl_util.cl and the requisite boilerplate
         else if (funcName == "cudaMemset") {
             if (!UsesCUDAMemset) {
-                if(!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
+                if (!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
                 GlobalCFuncs.push_back(CL_MEMSET);
                 GlobalHDecls.push_back(CL_MEMSET_H);
                 GlobalCLFuncs.push_back(CL_MEMSET_KERNEL);
@@ -3050,7 +3146,7 @@ private:
                 RewriteKernelExpr(y, newY);
                 newExpr = "rhadd(" + newX + ", " + newY + ")";
             }
-	    //TODO: support remaining
+            //TODO: support remaining
             //Begin type casting intrinsics
             else if (funcName == "__double2float_rd") {
                 Expr *x = ce->getArg(0);
@@ -3101,7 +3197,7 @@ private:
                 RewriteKernelExpr(x, newX);
                 newExpr = "convert_int_rtz(" + newX + ")";
             }
-        //Begin half comparison functions
+            //Begin half comparison functions
             else if (funcName == "__heq") {
                 Expr *x = ce->getArg(0);
                 Expr *y = ce->getArg(1);
@@ -3162,8 +3258,8 @@ private:
                 RewriteKernelExpr(y, newY);
                 newExpr = "isgreater(" + newX + ", " + newY + ")";
             }
-        //TODO: support remaining half comparison function
-        //Begin: half math functions
+            //TODO: support remaining half comparison function
+            //Begin: half math functions
             else if (funcName == "hcos") {
                 Expr *x = ce->getArg(0);
                 std::string newX;
@@ -3224,15 +3320,15 @@ private:
                 RewriteKernelExpr(x, newX);
                 newExpr = "sin(" + newX + ")";
             }
-        //TODO: support remaining half math functions
-        //Begin: atomin functions
-        //Note: Note: include the following in OpenCL program
-        // #pragma OPENCL EXTENSION extension-name : enable
-        // extension-name:
-        // "cl_khr_int64_base_atomics" for : atom_add atom_sub atom_inc
-        // atom_dec atom_xchg atom_cmpxchg
-        // "cl_khr_int64_extended_atomics" for: atom_min atom_max atom_and
-        // atom_or atom_xor"
+            //TODO: support remaining half math functions
+            //Begin: atomin functions
+            //Note: Note: include the following in OpenCL program
+            // #pragma OPENCL EXTENSION extension-name : enable
+            // extension-name:
+            // "cl_khr_int64_base_atomics" for : atom_add atom_sub atom_inc
+            // atom_dec atom_xchg atom_cmpxchg
+            // "cl_khr_int64_extended_atomics" for: atom_min atom_max atom_and
+            // atom_or atom_xor"
             else if (funcName == "atomicAdd") {
                 Expr *x = ce->getArg(0);
                 Expr *y = ce->getArg(1);
@@ -3550,7 +3646,7 @@ private:
         }
         if (func->hasAttrs()) {
             //Attributes are stored in reverse order of spelling, get the outermost
-            Attr *attr = *(func->attr_end()-1);
+            Attr *attr = *(func->attr_end() - 1);
             //Some functions have attributes on both prototype and definition.
             // This loop ensures we grab the LAST copy of the first attribute
             int i;
@@ -3611,7 +3707,7 @@ private:
                 endLoc = tempLoc;
             }
         }
-        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc,endLoc))), "");
+        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), "");
     }
 
     //Get rid of a variable declaration
@@ -3630,7 +3726,7 @@ private:
         if (var->hasAttrs()) {
             //Find any __shared__, __constant__, __device__, or other attribs
             //Attributes are stored in reverse order of spelling, get the outermost
-            Attr *attr = *(var->attr_end()-1);
+            Attr *attr = *(var->attr_end() - 1);
             tempLoc = SM->getExpansionLoc(attr->getLocation());
             if (SM->isBeforeInTranslationUnit(tempLoc, startLoc))
                 startLoc = tempLoc;
@@ -3666,7 +3762,7 @@ private:
         }
         //TODO Read ahead to the trailing newline if no active code elements are between it and the semicolon
         // (i.e. remove trailing comments identifying the variable and the newline)
-        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc,endLoc))), "");
+        generateReplacement(replace, SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), "");
         //replace.push_back(Replacement(*SM, startLoc, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(startLoc, endLoc))), ""));
     }
 
@@ -3766,7 +3862,7 @@ public:
         GlobalCDecls[mainFilename].empty();
         //TODO consider making this default
         // we will almost always need to load a kernel file
-        if(!UsesCU2CLLoadSrc) {
+        if (!UsesCU2CLLoadSrc) {
             GlobalCFuncs.push_back(LOAD_PROGRAM_SOURCE);
             GlobalHDecls.push_back(LOAD_PROGRAM_SOURCE_H);
             UsesCU2CLLoadSrc = true;
@@ -3862,7 +3958,7 @@ public:
             //Handles globally defined C or C++ functions
             if (fd) {
                 //Don't translate explicit template specializations
-                if(fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
+                if (fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
                     if (fd->hasAttr<CUDAGlobalAttr>() || fd->hasAttr<CUDADeviceAttr>()) {
                         //Device function, so rewrite kernel
                         RewriteKernelFunction(fd);
@@ -4016,6 +4112,8 @@ public:
                 CLInit += "    __cu2cl_Kernel_" + kernelName + " = clCreateKernel(__cu2cl_Program_" + file + ", \"" + kernelName + "\", NULL);\n";
             }
             CLInit += "}\n\n";
+            CLInit += "cl_int err;\n";
+            CLInit += CU2CL_ERROR_HANDLING;
             //Add the initializer to a deferred list of boilerplate
             // to be inserted after relevant cl_program/cl_kernel declarations
             LocalBoilDefs[(*i).first].push_back(CLInit);
@@ -4163,8 +4261,8 @@ public:
             std::string kernname = kernelNameFilter(includedFile.str()) + "-cl.cl";
             //FIXME: I am not sure why it's calculating one character larger than it should be, but regression tests indicate the static -1 is working
             // We should figure out the root of the problem to guarantee the fix
-            generateReplacement(HostReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end)))-1, hostname);
-            generateReplacement(KernReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end)))-1, kernname);
+            generateReplacement(HostReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end))) - 1, hostname);
+            generateReplacement(KernReplace, SM, start, getRangeSize(*SM, CharSourceRange::getTokenRange(SourceRange(start, end))) - 1, kernname);
         }
     }
 
@@ -4224,7 +4322,7 @@ public:
         std::stringstream ss(Add);
         std::string item;
         //Tokenize based on a space character delimiter
-        while(std::getline(ss, item, ' ')) {
+        while (std::getline(ss, item, ' ')) {
             AddV.push_back(item);
         }
     }
@@ -4259,7 +4357,7 @@ std::string parseGCCPaths() {
     tmpPathStr->append(*tmpPath);
     tmpPathStr->append(" 2>&1");
     const char * cmd = tmpPathStr->c_str();
-//	llvm::errs() << "Generated GCC Search command: " << cmd << "\n";
+//  llvm::errs() << "Generated GCC Search command: " << cmd << "\n";
     //run GCC and buffer all the data
     std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
     if (!pipe) return "ERROR";
@@ -4269,7 +4367,7 @@ std::string parseGCCPaths() {
         if (fgets(buffer, 128, pipe.get()) != NULL)
             result += buffer;
     }
-//	llvm::errs() << "GCC Search Output:\n" << result << "\n";
+//  llvm::errs() << "GCC Search Output:\n" << result << "\n";
 
     //Generate a StringRef for simpler search ops
     StringRef parseStr(result);
@@ -4367,7 +4465,7 @@ void replaceVarDecl(DeclaratorDecl *decl, SourceTuple * ST) {
 bool isAncestor(Stmt * ancestor, Stmt * child) {
     if (ancestor == child) return true;
     //else if (ancestor->child_begin() != ancestor->child_end()) {
-    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++){
+    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++) {
         if (isAncestor(*citr, child)) return true;
     }
     return false;
@@ -4406,6 +4504,7 @@ int main(int argc, const char ** argv) {
     //Boilerplate generation has to start before the tool runs, so the tool
     // instances can contribute their local init calls to it
     //Construct OpenCL initialization boilerplate
+
     CU2CLInit += "void __cu2cl_Init() {\n";
     GlobalCDecls["cu2cl_util.c"].push_back("const char *progSrc;\n");
     GlobalCDecls["cu2cl_util.c"].push_back("size_t progLen;\n\n");
@@ -4434,7 +4533,7 @@ int main(int argc, const char ** argv) {
 
     //After the tools run, we can finalize the global boilerplate
     //If __cu2cl_setDevice is used, we need to initialize the scan variables
-    if(UsesCUDASetDevice) {
+    if (UsesCUDASetDevice) {
         CU2CLInit += "    __cu2cl_AllDevices_size = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices_curr_idx = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices = NULL;\n";
