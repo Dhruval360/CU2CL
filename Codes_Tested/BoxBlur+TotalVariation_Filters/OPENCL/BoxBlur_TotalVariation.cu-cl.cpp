@@ -3,7 +3,7 @@ cl_kernel __cu2cl_Kernel_light_edge_detection;
 cl_kernel __cu2cl_Kernel_separateChannels;
 cl_kernel __cu2cl_Kernel_recombineChannels;
 cl_program __cu2cl_Program_BoxBlur_TotalVariation_cu;
-extern const char* progSrc;
+extern const char *progSrc;
 extern size_t progLen;
 
 extern cl_platform_id __cu2cl_Platform;
@@ -14,26 +14,101 @@ extern cl_command_queue __cu2cl_CommandQueue;
 extern size_t globalWorkSize[3];
 extern size_t localWorkSize[3];
 void __cu2cl_Cleanup_BoxBlur_TotalVariation_cu() {
-	clReleaseKernel(__cu2cl_Kernel_box_blur);
-	clReleaseKernel(__cu2cl_Kernel_light_edge_detection);
-	clReleaseKernel(__cu2cl_Kernel_separateChannels);
-	clReleaseKernel(__cu2cl_Kernel_recombineChannels);
-	clReleaseProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu);
+    clReleaseKernel(__cu2cl_Kernel_box_blur);
+    clReleaseKernel(__cu2cl_Kernel_light_edge_detection);
+    clReleaseKernel(__cu2cl_Kernel_separateChannels);
+    clReleaseKernel(__cu2cl_Kernel_recombineChannels);
+    clReleaseProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu);
 }
 void __cu2cl_Init_BoxBlur_TotalVariation_cu() {
-#ifdef WITH_ALTERA
-	progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation_cu_cl.aocx", &progSrc);
-	__cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char**)&progSrc, NULL, NULL);
-#else
-	progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation.cu-cl.cl", &progSrc);
-	__cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, NULL);
-#endif
-	free((void*)progSrc);
-	clBuildProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-	__cu2cl_Kernel_box_blur = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "box_blur", NULL);
-	__cu2cl_Kernel_light_edge_detection = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "light_edge_detection", NULL);
-	__cu2cl_Kernel_separateChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "separateChannels", NULL);
-	__cu2cl_Kernel_recombineChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "recombineChannels", NULL);
+    #ifdef WITH_ALTERA
+    progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation_cu_cl.aocx", &progSrc);
+    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, NULL);
+    #else
+    progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation.cu-cl.cl", &progSrc);
+    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, NULL);
+    #endif
+    free((void *) progSrc);
+    clBuildProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
+    __cu2cl_Kernel_box_blur = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "box_blur", NULL);
+    __cu2cl_Kernel_light_edge_detection = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "light_edge_detection", NULL);
+    __cu2cl_Kernel_separateChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "separateChannels", NULL);
+    __cu2cl_Kernel_recombineChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "recombineChannels", NULL);
+}
+
+cl_int err;
+const char *getErrorString(cl_int error){
+switch(error){
+// run-time and JIT compiler errors
+	case 0: return "CL_SUCCESS";
+	case -1: return "CL_DEVICE_NOT_FOUND";
+	case -2: return "CL_DEVICE_NOT_AVAILABLE";
+	case -3: return "CL_COMPILER_NOT_AVAILABLE";
+	case -4: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
+	case -5: return "CL_OUT_OF_RESOURCES";
+	case -6: return "CL_OUT_OF_HOST_MEMORY";
+	case -7: return "CL_PROFILING_INFO_NOT_AVAILABLE";
+	case -8: return "CL_MEM_COPY_OVERLAP";
+	case -9: return "CL_IMAGE_FORMAT_MISMATCH";
+	case -10: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
+	case -11: return "CL_BUILD_PROGRAM_FAILURE";
+	case -12: return "CL_MAP_FAILURE";
+	case -13: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
+	case -14: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
+	case -15: return "CL_COMPILE_PROGRAM_FAILURE";
+	case -16: return "CL_LINKER_NOT_AVAILABLE";
+	case -17: return "CL_LINK_PROGRAM_FAILURE";
+	case -18: return "CL_DEVICE_PARTITION_FAILED";
+	case -19: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
+	// compile-time errors
+	case -30: return "CL_INVALID_VALUE";
+	case -31: return "CL_INVALID_DEVICE_TYPE";
+	case -32: return "CL_INVALID_PLATFORM";
+	case -33: return "CL_INVALID_DEVICE";
+	case -34: return "CL_INVALID_CONTEXT";
+	case -35: return "CL_INVALID_QUEUE_PROPERTIES";
+	case -36: return "CL_INVALID_COMMAND_QUEUE";
+	case -37: return "CL_INVALID_HOST_PTR";
+	case -38: return "CL_INVALID_MEM_OBJECT";
+	case -39: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
+	case -40: return "CL_INVALID_IMAGE_SIZE";
+	case -41: return "CL_INVALID_SAMPLER";
+	case -42: return "CL_INVALID_BINARY";
+	case -43: return "CL_INVALID_BUILD_OPTIONS";
+	case -44: return "CL_INVALID_PROGRAM";
+	case -45: return "CL_INVALID_PROGRAM_EXECUTABLE";
+	case -46: return "CL_INVALID_KERNEL_NAME";
+	case -47: return "CL_INVALID_KERNEL_DEFINITION";
+	case -48: return "CL_INVALID_KERNEL";
+	case -49: return "CL_INVALID_ARG_INDEX";
+	case -50: return "CL_INVALID_ARG_VALUE";
+	case -51: return "CL_INVALID_ARG_SIZE";
+	case -52: return "CL_INVALID_KERNEL_ARGS";
+	case -53: return "CL_INVALID_WORK_DIMENSION";
+	case -54: return "CL_INVALID_WORK_GROUP_SIZE";
+	case -55: return "CL_INVALID_WORK_ITEM_SIZE";
+	case -56: return "CL_INVALID_GLOBAL_OFFSET";
+	case -57: return "CL_INVALID_EVENT_WAIT_LIST";
+	case -58: return "CL_INVALID_EVENT";
+	case -59: return "CL_INVALID_OPERATION";
+	case -60: return "CL_INVALID_GL_OBJECT";
+	case -61: return "CL_INVALID_BUFFER_SIZE";
+	case -62: return "CL_INVALID_MIP_LEVEL";
+	case -63: return "CL_INVALID_GLOBAL_WORK_SIZE";
+	case -64: return "CL_INVALID_PROPERTY";
+	case -65: return "CL_INVALID_IMAGE_DESCRIPTOR";
+	case -66: return "CL_INVALID_COMPILER_OPTIONS";
+	case -67: return "CL_INVALID_LINKER_OPTIONS";
+	case -68: return "CL_INVALID_DEVICE_PARTITION_COUNT";
+	// extension errors
+	case -1000: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
+	case -1001: return "CL_PLATFORM_NOT_FOUND_KHR";
+	case -1002: return "CL_INVALID_D3D10_DEVICE_KHR";
+	case -1003: return "CL_INVALID_D3D10_RESOURCE_KHR";
+	case -1004: return "CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR";
+	case -1005: return "CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR";
+	default: return "Unknown OpenCL error";
+}
 }
 
 #ifdef __APPLE__
@@ -125,7 +200,7 @@ void serial_light_edge_detection(const Mat inputImage, Mat outputImage, int rows
 
 int main()
 {
-	__cu2cl_Init();
+__cu2cl_Init();
 
 	char input_file[] = "Images set 1/original.jpg";
 
@@ -145,32 +220,32 @@ int main()
 	int divFactor = filterWidth * filterWidth; // For dividing the sum of neighbouring pixel values after summation for the box filter for normalization
 
 	// For all the variable names I have used the convention I learnt from the udacity course that h_ represents host (CPU) variable and d_ represents device (GPU) variable
-	uchar4* h_inputImageRGBA;
-	cl_mem d_inputImageRGBA;
+	uchar4 *h_inputImageRGBA;
+cl_mem d_inputImageRGBA;
 	cv::Mat inputImageRGBA;
 
 	// For box blur
 	cl_mem d_outputImageRGBA;
 	cl_mem d_redBlurred;
-	cl_mem d_greenBlurred;
-	cl_mem d_blueBlurred;
+cl_mem d_greenBlurred;
+cl_mem d_blueBlurred;
 	cl_mem d_red;
-	cl_mem d_green;
-	cl_mem d_blue;
+cl_mem d_green;
+cl_mem d_blue;
 	cv::Mat outputImageRGBA;
 
 	// For light edge
 	cl_mem d_outputImageRGBA2;
 	cl_mem d_redlight;
-	cl_mem d_greenlight;
-	cl_mem d_bluelight;
+cl_mem d_greenlight;
+cl_mem d_bluelight;
 	cv::Mat outputImageRGBA2; // Light edge filter application
 
 	int cols = image.cols;
 	int rows = image.rows;
 	int totalPixels = cols * rows;
 	int channels = image.channels();
-
+	
 	// For the serial code
 	Mat CPUoutput1, CPUoutput2;
 	CPUoutput1 = image.clone();
@@ -184,12 +259,12 @@ int main()
 	serial_light_edge_detection(image, CPUoutput2, rows, cols, channels);
 
 	endcpu = clock();
-	cpu_time_used = (((double)(endcpu - startcpu)) / CLOCKS_PER_SEC) * 1000; // For milli seconds
+	cpu_time_used = (((double)(endcpu - startcpu)) / CLOCKS_PER_SEC)*1000; // For milli seconds
 	printf("Total time taken for both filters for image of size %d,%d on CPU: %lf ms\n", cols, rows, cpu_time_used);
 
 	cv::imwrite(output_file3, CPUoutput1);
 	cv::imwrite(output_file4, CPUoutput2);
-
+	
 	/*
 	// I have compressed this 9 by 8 matrix into a 1D array and have used that instead of this
 	int h_lightEdgeFilter[lightKernelWidth * lightKernelHeight] = { 0 }; // Initializing the light edge filter on the host
@@ -212,10 +287,10 @@ int main()
 	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
-	*&start = clCreateUserEvent(__cu2cl_Context, &err);
-	*&stop = clCreateUserEvent(__cu2cl_Context, &err);
+	start;
+	stop;
 
-	clEnqueueMarker(, &start);
+	clEnqueueMarker(__cu2cl_CommandQueue, &start);
 
 	cl_command_queue s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
 	*&s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
@@ -245,101 +320,101 @@ int main()
 
 	clFinish(__cu2cl_CommandQueue);
 
-	const size_t blockSize[3] = { 32, 32, 1 };
-	const size_t gridSize[3] = { (cols / blockSize.x) + 1, (rows / blockSize.y) + 1, 1 };
+	const size_t blockSize[3] = {32, 32, 1};
+	const size_t gridSize[3] = {(cols / blockSize.x) + 1, (rows / blockSize.y) + 1, 1};
 
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_separateChannels, 0, sizeof(cl_mem), &d_inputImageRGBA);
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
+clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
+clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
+clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 	clFinish(__cu2cl_CommandQueue);
 
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_red);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_green);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_blue);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_red);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_green);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_blue);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
 	clFinish(__cu2cl_CommandQueue);
 
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redlight);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-	localWorkSize[0] = blockSize;
-	globalWorkSize[0] = (gridSize)*localWorkSize[0];
-	clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+localWorkSize[0] = blockSize;
+globalWorkSize[0] = (gridSize)*localWorkSize[0];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 
 	clFinish(__cu2cl_CommandQueue);
 
@@ -347,7 +422,7 @@ int main()
 	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
 
 	float milliseconds = 0;
-	clEnqueueMarker(, &stop);
+	clEnqueueMarker(__cu2cl_CommandQueue, &stop);
 	clWaitForEvents(1, &stop);
 	__cu2cl_EventElapsedTime(&milliseconds, start, stop);
 
@@ -366,6 +441,6 @@ int main()
 	clReleaseCommandQueue(s1); clReleaseCommandQueue(s2); clReleaseCommandQueue(s3); clReleaseCommandQueue(s4); clReleaseCommandQueue(s5); clReleaseCommandQueue(s6);
 
 	return 0;
-	__cu2cl_Cleanup();
+__cu2cl_Cleanup();
 }
 

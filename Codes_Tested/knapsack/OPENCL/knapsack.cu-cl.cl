@@ -1,6 +1,10 @@
 
 
 #include "device_launch_parameters.h-cl.cl"
+
+
+
+
 #define N 10;
 
 // CPU : 0.001s
@@ -93,3 +97,6 @@ __kernel void knapsackGPU2(__global int* dp, __global int* d_value, __global int
 	}
 	
 }
+
+
+
