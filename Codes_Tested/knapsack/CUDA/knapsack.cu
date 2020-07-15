@@ -1,6 +1,4 @@
-
 #include "cuda_runtime.h"
-#include "device_launch_parameters.h"
 #include<time.h>
 #include <stdio.h>
 #include<iostream>
@@ -168,7 +166,7 @@ int main()
 
 
 	start = clock();
-	knapsackGPU2 << <block,thread>> > (dp,d_value,d_weight,capacity,n);
+	knapsackGPU2 <<<block,thread>>> (dp,d_value,d_weight,capacity,n);
 	end = clock();
 	time = ((double)end - (double)start) / CLOCKS_PER_SEC;
 

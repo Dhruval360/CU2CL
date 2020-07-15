@@ -1,3 +1,4 @@
+#include<cuda.h>
 const int N = 1 << 20;
 
 __global__ void kernel(float *x, int n)

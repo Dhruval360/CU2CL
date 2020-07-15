@@ -68,7 +68,7 @@ End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/knapsack/CUDA/knapsack.cu:171:57: warning: expression result unused [-Wunused-value]
         knapsackGPU2 << <block,thread>> > (dp,d_value,d_weight,capacity,n);
                                                                ^~~~~~~~
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/knapsack/CUDA/knapsack.cu Translation Time: 41 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/knapsack/CUDA/knapsack.cu Translation Time: 42 microseconds
 4 warnings and 2 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/knapsack/CUDA/knapsack.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!

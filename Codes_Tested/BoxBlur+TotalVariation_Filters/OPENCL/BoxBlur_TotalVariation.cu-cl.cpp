@@ -287,8 +287,8 @@ cl_mem d_bluelight;
 	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
-	start;
-	stop;
+	start = clCreateUserEvent(__cu2cl_Context, &err);
+	stop = clCreateUserEvent(__cu2cl_Context, &err);
 
 	clEnqueueMarker(__cu2cl_CommandQueue, &start);
 

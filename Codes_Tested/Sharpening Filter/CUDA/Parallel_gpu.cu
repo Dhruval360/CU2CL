@@ -1,8 +1,3 @@
-
-
-#include "device_launch_parameters.h"
-
-
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/highgui.hpp>
 #include <iostream>
@@ -117,7 +112,7 @@ void sharpeningFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output)
     cudaEventRecord(start);
 
     // Run BoxFilter kernel on CUDA 
-    sharpeningFilter << <grid, block >> > (d_input, d_output, output.cols, output.rows, channel);
+    sharpeningFilter <<<grid, block >>> (d_input, d_output, output.cols, output.rows, channel);
 
     // Stop time
     cudaEventRecord(stop);
