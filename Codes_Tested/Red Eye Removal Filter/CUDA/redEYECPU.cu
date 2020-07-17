@@ -12,7 +12,6 @@
 #include <vector>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include "loadSaveImage.h"
 #include <stdio.h>
 
 __global__ void naive_normalized_cross_correlation(
@@ -408,7 +407,7 @@ int main() {
     float b_mean = (double)bt_sum / templateSize;
     float g_mean = (double)gt_sum / templateSize;
 
-    printf("this is rmean\n", r_mean);
+   // printf("this is rmean\n", r_mean);
     //printf("It came through\n");
 
 
