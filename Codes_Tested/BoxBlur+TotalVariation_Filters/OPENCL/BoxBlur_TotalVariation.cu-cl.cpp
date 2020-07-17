@@ -133,7 +133,7 @@ switch(error){
 
 using namespace cv;
 
-// I learnt about vector notaion in c++ and now know that uchar4* is a 2D array of 4 element vectors of unsigned char type.  
+// I learnt about vector notaion in c++ and now know that cl_uchar4* is a 2D array of 4 element vectors of unsigned char type.  
 
 
 
@@ -195,7 +195,7 @@ int main()
 {
 __cu2cl_Init();
 
-	char input_file[] = "\"Images set 1\"/Original.jpg";
+	char input_file[] = "1/Original.jpg";
 
 	cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
 	if (image.empty())
@@ -204,16 +204,16 @@ __cu2cl_Init();
 		exit(1);
 	}
 
-	char output_file[] = "\"Images set 1\"/Blurred_GPU.jpg";
-	char output_file2[] = "\"Images set 1\"/TotalVariationFilter_GPU.jpg";
-	char output_file3[] = "\"Images set 1\"/Blurred_CPU.jpg";
-	char output_file4[] = "\"Images set 1\"/TotalVariationFilter_CPU.jpg";
+	char output_file[] = "1/Blurred_GPU.jpg";
+	char output_file2[] = "1/TotalVariationFilter_GPU.jpg";
+	char output_file3[] = "1/Blurred_CPU.jpg";
+	char output_file4[] = "1/TotalVariationFilter_CPU.jpg";
 
 	int filterWidth = 9; // For the box blur
 	int divFactor = filterWidth * filterWidth; // For dividing the sum of neighbouring pixel values after summation for the box filter for normalization
 
 	// For all the variable names I have used the convention I learnt from the udacity course that h_ represents host (CPU) variable and d_ represents device (GPU) variable
-	uchar4 *h_inputImageRGBA;
+	cl_uchar4 *h_inputImageRGBA;
 cl_mem d_inputImageRGBA;
 	cv::Mat inputImageRGBA;
 
@@ -277,7 +277,7 @@ cl_mem d_bluelight;
 	outputImageRGBA.create(rows, cols, CV_8UC4);
 	outputImageRGBA2.create(rows, cols, CV_8UC4);
 
-	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
+	h_inputImageRGBA = (cl_uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
 	start = clCreateUserEvent(__cu2cl_Context, &err);
@@ -295,10 +295,10 @@ cl_mem d_bluelight;
 	*&d_blue = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
 
 	// Alloting memory for the output images in the GPU
-	*&d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, NULL);
-	*&d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, NULL);
-	*&d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, NULL);
-	clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
+	*&d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
+	*&d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
+	*&d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
+	clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
 
 	// Alloting memory for each output channel on the GPU
 	// For box blur
@@ -314,7 +314,7 @@ cl_mem d_bluelight;
 	clFinish(__cu2cl_CommandQueue);
 
 	const size_t blockSize[3] = {32, 32, 1};
-	const size_t gridSize[3] = {(cols / blockSize.x) + 1, (rows / blockSize.y) + 1, 1};
+	const size_t gridSize[3] = {(cols / blockSize[0]) + 1, (rows / blockSize[1]) + 1, 1};
 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_separateChannels, 0, sizeof(cl_mem), &d_inputImageRGBA);
@@ -343,8 +343,14 @@ clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
 clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
 clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
 clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-localWorkSize[0] = blockSize;
-globalWorkSize[0] = (gridSize)*localWorkSize[0];
+
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = (gridSize[0])*localWorkSize[0]; 
+globalWorkSize[1] = (gridSize[1])*localWorkSize[1]; 
+globalWorkSize[2] = (gridSize[2])*localWorkSize[2]; 
+
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_green);
@@ -466,8 +472,8 @@ clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1
 
 	clFinish(__cu2cl_CommandQueue);
 
-	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
-	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
+	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
+	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
 
 	float milliseconds = 0;
 	clEnqueueMarker(__cu2cl_CommandQueue, &stop);
@@ -491,4 +497,5 @@ clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1
 	return 0;
 __cu2cl_Cleanup();
 }
+
 
