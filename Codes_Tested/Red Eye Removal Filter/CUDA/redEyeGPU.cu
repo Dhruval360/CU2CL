@@ -373,9 +373,9 @@ void radix_sort(unsigned int* const d_inputVals,
   const size_t histo_size = 2 * sizeof(unsigned int);
   const size_t arr_size   = numElems * sizeof(unsigned int);
 
-  checkCudaErrors(cudaMalloc(&d_bins, histo_size));
-  checkCudaErrors(cudaMalloc(&d_scanned, arr_size));
-  checkCudaErrors(cudaMalloc(&d_moved, arr_size));
+  cudaMalloc(&d_bins, histo_size);
+  cudaMalloc(&d_scanned, arr_size);
+  cudaMalloc(&d_moved, arr_size);
 
 
   // for histogram kernel defined here
@@ -385,10 +385,10 @@ void radix_sort(unsigned int* const d_inputVals,
 
   for (unsigned int pass = 0; pass < 32; pass++) {
     unsigned int one = 1;
-    checkCudaErrors(cudaMemset(d_bins, 0, histo_size));
-    checkCudaErrors(cudaMemset(d_scanned, 0, arr_size));
-    checkCudaErrors(cudaMemset(d_outputVals, 0, arr_size));
-    checkCudaErrors(cudaMemset(d_outputPos, 0, arr_size));
+    cudaMemset(d_bins, 0, histo_size);
+    cudaMemset(d_scanned, 0, arr_size);
+    cudaMemset(d_outputVals, 0, arr_size);
+    cudaMemset(d_outputPos, 0, arr_size);
 
     histogram_kernel <<< hist_block_dim, thread_dim>>>(pass, d_bins, d_inputVals, numElems);
     cudaDeviceSynchronize();
@@ -415,14 +415,16 @@ void radix_sort(unsigned int* const d_inputVals,
       h_bins[0],
       numElems
     );
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
-    checkCudaErrors(cudaMemcpy(d_inputVals, d_outputVals, arr_size, cudaMemcpyDeviceToDevice));
-    checkCudaErrors(cudaMemcpy(d_inputPos, d_outputPos, arr_size, cudaMemcpyDeviceToDevice));
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+    cudaDeviceSynchronize(); 
+    // checkCudaErrors(cudaGetLastError());
+    cudaMemcpy(d_inputVals, d_outputVals, arr_size, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(d_inputPos, d_outputPos, arr_size, cudaMemcpyDeviceToDevice);
+    cudaDeviceSynchronize(); 
+    // checkCudaErrors(cudaGetLastError());
   }
-  checkCudaErrors(cudaFree(d_moved));
-  checkCudaErrors(cudaFree(d_scanned));
-  checkCudaErrors(cudaFree(d_bins));
+  cudaFree(d_moved);
+  cudaFree(d_scanned);
+  cudaFree(d_bins);
 }
 
 int main() {
@@ -546,7 +548,7 @@ int main() {
         numRowsTemplate * numColsTemplate, r_mean);
 
     cudaDeviceSynchronize();
-    checkCudaErrors(cudaGetLastError());
+    // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (blue_data,
         d_b,
@@ -555,7 +557,8 @@ int main() {
         templateHalfHeight, numRowsTemplate,
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, b_mean);
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+    cudaDeviceSynchronize(); 
+    // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (green_data,
         d_g,
@@ -565,16 +568,18 @@ int main() {
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, g_mean);
 
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+    cudaDeviceSynchronize();
+     // checkCudaErrors(cudaGetLastError());
 
     float* h_red_data, * h_blue_data, * h_green_data;
     h_red_data = new float[numElems];
     h_green_data = new float[numElems];
     h_blue_data = new float[numElems];
-    checkCudaErrors(cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost));
+    cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_blue_data, blue_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_green_data, green_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost);
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+    cudaDeviceSynchronize(); 
+    // checkCudaErrors(cudaGetLastError());
     float* combined = new float[numElems];
     float mini = 0;
 
@@ -646,7 +651,8 @@ int main() {
         40,
         numRowsImg, numColsImg,
         9, 9);
-    cudaDeviceSynchronize(); checkCudaErrors(cudaGetLastError());
+    cudaDeviceSynchronize(); 
+    // checkCudaErrors(cudaGetLastError());
 
     uchar* h_op_r = new uchar[numElems];
     cudaMemcpy(h_op_r, d_op_r, sizeof(uchar) * numElems, cudaMemcpyDeviceToHost);

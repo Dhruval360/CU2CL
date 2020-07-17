@@ -10,13 +10,10 @@
 #include "cu2cl_util.h"
 extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
 extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
-extern cl_program __cu2cl_Program_redEYECPU_cu;
-extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
-extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
 extern cl_kernel __cu2cl_Kernel_histogram_kernel;
 extern cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
 extern cl_kernel __cu2cl_Kernel_move_kernel;
-extern cl_program __cu2cl_Program_redEyeGPU_cu;
+extern cl_program __cu2cl_Program_redGPU_cu;
 const char *progSrc;
 size_t progLen;
 
@@ -55,8 +52,7 @@ void __cu2cl_Init() {
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
     __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
-    __cu2cl_Init_redEYECPU_cu();
-    __cu2cl_Init_redEyeGPU_cu();
+    __cu2cl_Init_redGPU_cu();
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("cu2cl_util.aocx", &progSrc);
     __cu2cl_Util_Program = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, NULL);
@@ -72,8 +68,7 @@ void __cu2cl_Init() {
 void __cu2cl_Cleanup() {
     clReleaseKernel(__cu2cl_Kernel___cu2cl_Memset);
     clReleaseProgram(__cu2cl_Util_Program);
-    __cu2cl_Cleanup_redEyeGPU_cu();
-    __cu2cl_Cleanup_redEYECPU_cu();
+    __cu2cl_Cleanup_redGPU_cu();
     clReleaseCommandQueue(__cu2cl_CommandQueue);
     clReleaseContext(__cu2cl_Context);
 }
