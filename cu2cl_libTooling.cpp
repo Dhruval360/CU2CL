@@ -935,6 +935,7 @@ private:
         if (Expr *e = dyn_cast<Expr>(s)) {
             std::string str;
             if (RewriteHostExpr(e, str)) {
+                //std::cout << str << " is hostexpr\n";
                 replaceAll(str, "cudaSuccess", "CL_SUCCESS");
                 ReplaceStmtWithText(e, str, HostReplace);
             }
@@ -1016,7 +1017,11 @@ private:
             //Also catches cutil, cuFFT, cuBLAS, and other library calls incidentally, which may or may not be wanted
             //TODO: Perhaps a second tier of filtering is needed
             else if (ce->getDirectCallee()->getNameAsString().find("cu") == 0)
-                return RewriteCUDACall(ce, newExpr);
+            {
+                //std::cout << newExpr << "STAYS LATER\n";
+                // replaceAll(newExpr, "cudaSuccess", "CL_SUCCESS");
+                return RewriteCUDACall(ce, newExpr);;
+            }
         }
         //Catches expressions which refer to the member of a struct or class
         // in the CUDA case these are primarily just dim3s and cudaDeviceProp

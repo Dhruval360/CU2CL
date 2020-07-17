@@ -5,29 +5,11 @@
 *
 *    This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
 *
-*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+*   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
-#ifdef __APPLE__
-#include <OpenCL/opencl.h>
-#else
-#include <CL/opencl.h>
-#endif
-#include <stdlib.h>
-#include <stdio.h>
-
-#ifdef __cplusplus
-//extern "C" {
-#endif
-void __cu2cl_Init();
-
-void __cu2cl_Cleanup();
-size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
-
-void __cu2cl_Init_vectorAdd_cu();
-
-void __cu2cl_Cleanup_vectorAdd_cu();
-
-
-#ifdef __cplusplus
-//}
-#endif
+__kernel void __cu2cl_Memset(__global uchar *ptr, uchar value, uint num) {
+    size_t id = get_global_id(0);
+    if (get_global_id(0) < num) {
+        ptr[id] = value;
+    }
+}

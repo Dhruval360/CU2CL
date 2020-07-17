@@ -12,16 +12,59 @@
 
 cl_kernel __cu2cl_Kernel_device_add;
 cl_program __cu2cl_Program_vectorAdd_cu;
-extern const char *progSrc;
-extern size_t progLen;
+/*
+const char *progSrc;
+size_t progLen;
 
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
+ cl_platform_id __cu2cl_Platform;
+ cl_device_id __cu2cl_Device;
+cl_context __cu2cl_Context;
+ cl_command_queue __cu2cl_CommandQueue;
 
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
+ size_t globalWorkSize[3];
+size_t localWorkSize[3];
+*/
+const char* progSrc;
+size_t progLen;
+
+cl_platform_id __cu2cl_Platform;
+cl_device_id __cu2cl_Device;
+cl_context __cu2cl_Context;
+cl_command_queue __cu2cl_CommandQueue;
+
+size_t globalWorkSize[3];
+size_t localWorkSize[3];
+size_t __cu2cl_LoadProgramSource(const char* filename, const char** progSrc) {
+	printf("%s\n", filename);
+	FILE* f = fopen(filename, "r");
+	if (f == NULL)
+	{
+		printf("it is coming NULL\n");
+	}
+	fseek(f, 0, SEEK_END);
+	size_t len = (size_t)ftell(f);
+	*progSrc = (const char*)malloc(sizeof(char) * len);
+	rewind(f);
+	fread((void*)*progSrc, len, 1, f);
+	fclose(f);
+	return len;
+}
+
+
+void __cu2cl_Init() {
+	clGetPlatformIDs(1, &__cu2cl_Platform, NULL);
+	clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
+	__cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
+	__cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
+	__cu2cl_Init_vectorAdd_cu();
+}
+
+void __cu2cl_Cleanup() {
+	__cu2cl_Cleanup_vectorAdd_cu();
+	clReleaseCommandQueue(__cu2cl_CommandQueue);
+	clReleaseContext(__cu2cl_Context);
+}
+
 void __cu2cl_Cleanup_vectorAdd_cu() {
     clReleaseKernel(__cu2cl_Kernel_device_add);
     clReleaseProgram(__cu2cl_Program_vectorAdd_cu);
@@ -115,7 +158,7 @@ switch(error){
 }
 
 #include <stdio.h>
-# define N 512
+# define N 32
 
 
 void fill_array(int *data)
@@ -133,7 +176,7 @@ void host_add(int *a,int* b,int* c)
 void print_output(int* op)
 {
 	for(int i=0;i<N;i++)
-		printf("%d\n",op[i]);
+		printf("%d\t",op[i]);
 }
 
 
@@ -149,6 +192,8 @@ __cu2cl_Init();
 	c= (int*)malloc(size);
 	fill_array(a);
 	fill_array(b);
+	//print_output(a);
+	//print_output(b);
 
 	cl_mem d_a;
 cl_mem d_b;
