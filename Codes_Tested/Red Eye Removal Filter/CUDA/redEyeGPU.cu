@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "utils.h"
+// #include "utils.h"
 
 #include <iostream>
 #include <string>
@@ -12,7 +12,7 @@
 #include <vector>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include "loadSaveImage.h"
+// #include "loadSaveImage.h"
 #include <stdio.h>
 
 __global__ void naive_normalized_cross_correlation(
