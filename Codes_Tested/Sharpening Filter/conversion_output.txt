@@ -1,0 +1,146 @@
+clang version 3.4 (tags/RELEASE_34/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.8
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.8.5
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.9
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.9.4
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/6.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7.5.0
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
+Commenting is enabled
+clBuild arguments appended: 
+Name filtering is disabled
+GCC include directory import is enabled
+GCC final directives: -I /usr/lib/gcc/x86_64-linux-gnu/4.8/include -I /usr/local/include -I /usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I /usr/include/x86_64-linux-gnu -I /usr/include 
+clang version 3.4 (tags/RELEASE_34/final)
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.8
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.8.5
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.9
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/4.9.4
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/6.5.0
+Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7.5.0
+Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
+warning: argument unused during compilation: '-disable-free'
+clang Invocation:
+ "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/cu2cl-tool" "-cc1" "-triple" "x86_64-unknown-linux-gnu" "-fsyntax-only" "-disable-free" "-disable-llvm-verifier" "-main-file-name" "Parallel_gpu.cu" "-mrelocation-model" "static" "-mdisable-fp-elim" "-fmath-errno" "-masm-verbose" "-mconstructor-aliases" "-munwind-tables" "-fuse-init-array" "-target-cpu" "x86-64" "-v" "-resource-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4" "-include" "cuda_runtime.h" "-D" "GPU_ON" "-D" "CUDA_SAFE_CALL(X)=X" "-D" "__CUDACC__" "-D" "__SM_32_INTRINSICS_H__" "-D" "__SM_35_INTRINSICS_H__" "-D" "__SURFACE_INDIRECT_FUNCTIONS_H__" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include" "-I" "/usr/local/include" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" "-I" "/usr/include/x86_64-linux-gnu" "-I" "/usr/include" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include" "-internal-externc-isystem" "/usr/include/x86_64-linux-gnu" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-fdeprecated-macro" "-fdebug-compilation-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build" "-ferror-limit" "19" "-fmessage-length" "0" "-mstackrealign" "-fobjc-runtime=gcc" "-fcxx-exceptions" "-fexceptions" "-fdiagnostics-show-option" "-vectorize-slp" "-x" "cuda" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu"
+
+clang -cc1 version 3.4 based upon LLVM 3.4svn default target x86_64-unknown-linux-gnu
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu"
+ignoring nonexistent directory "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include"
+ignoring nonexistent directory "/include"
+ignoring duplicate directory "/usr/local/include"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu"
+  as it is a non-system directory that duplicates a system directory
+ignoring duplicate directory "/usr/include"
+  as it is a non-system directory that duplicates a system directory
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed
+ /usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0
+ /usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward
+ /usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+In file included from /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu:6:
+In file included from /usr/include/opencv2/imgproc/imgproc.hpp:50:
+In file included from /usr/include/opencv2/core/core.hpp:49:
+In file included from /usr/include/opencv2/core/types_c.h:87:
+In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:101:19: error: use of undeclared identifier '__builtin_ia32_addss'
+  return (__m128) __builtin_ia32_addss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:107:19: error: use of undeclared identifier '__builtin_ia32_subss'
+  return (__m128) __builtin_ia32_subss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:113:19: error: use of undeclared identifier '__builtin_ia32_mulss'
+  return (__m128) __builtin_ia32_mulss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:119:19: error: use of undeclared identifier '__builtin_ia32_divss'; did you mean '__builtin_ia32_minss'?
+  return (__m128) __builtin_ia32_divss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:113:19: note: '__builtin_ia32_minss' declared here
+  return (__m128) __builtin_ia32_mulss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:157:19: error: use of undeclared identifier '__builtin_ia32_addps'; did you mean '__builtin_ia32_haddps'?
+  return (__m128) __builtin_ia32_addps ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:101:19: note: '__builtin_ia32_haddps' declared here
+  return (__m128) __builtin_ia32_addss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:163:19: error: use of undeclared identifier '__builtin_ia32_subps'; did you mean '__builtin_ia32_hsubps'?
+  return (__m128) __builtin_ia32_subps ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:107:19: note: '__builtin_ia32_hsubps' declared here
+  return (__m128) __builtin_ia32_subss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:169:19: error: use of undeclared identifier '__builtin_ia32_mulps'
+  return (__m128) __builtin_ia32_mulps ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:175:19: error: use of undeclared identifier '__builtin_ia32_divps'; did you mean '__builtin_ia32_minps'?
+  return (__m128) __builtin_ia32_divps ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:169:19: note: '__builtin_ia32_minps' declared here
+  return (__m128) __builtin_ia32_mulps ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:213:10: error: use of undeclared identifier '__builtin_ia32_andps'; did you mean '__builtin_ia32_haddps'?
+  return __builtin_ia32_andps (__A, __B);
+         ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:101:19: note: '__builtin_ia32_haddps' declared here
+  return (__m128) __builtin_ia32_addss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:219:10: error: use of undeclared identifier '__builtin_ia32_andnps'
+  return __builtin_ia32_andnps (__A, __B);
+         ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:225:10: error: use of undeclared identifier '__builtin_ia32_orps'
+  return __builtin_ia32_orps (__A, __B);
+         ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:231:10: error: use of undeclared identifier '__builtin_ia32_xorps'
+  return __builtin_ia32_xorps (__A, __B);
+         ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:241:19: error: use of undeclared identifier '__builtin_ia32_cmpeqss'
+  return (__m128) __builtin_ia32_cmpeqss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:247:19: error: use of undeclared identifier '__builtin_ia32_cmpltss'
+  return (__m128) __builtin_ia32_cmpltss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:253:19: error: use of undeclared identifier '__builtin_ia32_cmpless'
+  return (__m128) __builtin_ia32_cmpless ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:261:6: error: use of undeclared identifier '__builtin_ia32_cmpltss'
+                                        __builtin_ia32_cmpltss ((__v4sf) __B,
+                                        ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:271:6: error: use of undeclared identifier '__builtin_ia32_cmpless'
+                                        __builtin_ia32_cmpless ((__v4sf) __B,
+                                        ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:279:19: error: use of undeclared identifier '__builtin_ia32_cmpneqss'
+  return (__m128) __builtin_ia32_cmpneqss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/xmmintrin.h:285:19: error: use of undeclared identifier '__builtin_ia32_cmpnltss'
+  return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
+                  ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu Translation Time: 48 microseconds
+20 errors generated.
+Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu.
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaFree!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaFree!
+Retained 1 ASTContexts!

@@ -160,7 +160,7 @@ __global__ void recombineChannels(const unsigned char* redChannel, const unsigne
 
 int main()
 {
-	char input_file[] = "Images set 1/original.jpg";
+	char input_file[] = "1/Original.jpg";
 
 	cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
 	if (image.empty())

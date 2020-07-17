@@ -145,7 +145,7 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:292:23: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:33: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:23: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 100 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 102 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu.
 CU2CL DEBUG: Rejected propagation of DeclRefExpr h_inputImageRGBA not matching Decl d_inputImageRGBA

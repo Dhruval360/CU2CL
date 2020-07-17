@@ -1358,7 +1358,8 @@ private:
             Expr *event = cudaCall->getArg(0);
             std::string newEvent;
             RewriteHostExpr(event, newEvent);
-            newExpr = newEvent[0] == '&' ? newEvent.substr(1) : ('*' + newEvent) + " = clCreateUserEvent(__cu2cl_Context, &err)" ; // This is because the input to cudaEventCreate is the address of the event variable
+            newEvent = (newEvent[0] == '&') ? newEvent.substr(1) : ('*' + newEvent);
+            newExpr = newEvent + " = clCreateUserEvent(__cu2cl_Context, &err)" ; // This is because the input to cudaEventCreate is the address of the event variable
         }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
