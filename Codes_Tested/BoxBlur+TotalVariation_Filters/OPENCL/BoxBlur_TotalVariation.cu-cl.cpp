@@ -16,7 +16,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
-//I manually moved the header to the top
+//I manually moved the headers to the top
 
 cl_kernel __cu2cl_Kernel_box_blur;
 cl_kernel __cu2cl_Kernel_light_edge_detection;
@@ -214,24 +214,24 @@ __cu2cl_Init();
 
 	// For all the variable names I have used the convention I learnt from the udacity course that h_ represents host (CPU) variable and d_ represents device (GPU) variable
 	cl_uchar4 *h_inputImageRGBA;
-cl_mem d_inputImageRGBA;
+	cl_mem d_inputImageRGBA;
 	cv::Mat inputImageRGBA;
 
 	// For box blur
 	cl_mem d_outputImageRGBA;
 	cl_mem d_redBlurred;
-cl_mem d_greenBlurred;
-cl_mem d_blueBlurred;
+	cl_mem d_greenBlurred;
+	cl_mem d_blueBlurred;
 	cl_mem d_red;
-cl_mem d_green;
-cl_mem d_blue;
+	cl_mem d_green;
+	cl_mem d_blue;
 	cv::Mat outputImageRGBA;
 
 	// For light edge
 	cl_mem d_outputImageRGBA2;
 	cl_mem d_redlight;
-cl_mem d_greenlight;
-cl_mem d_bluelight;
+	cl_mem d_greenlight;
+	cl_mem d_bluelight;
 	cv::Mat outputImageRGBA2; // Light edge filter application
 
 	int cols = image.cols;
@@ -281,35 +281,76 @@ cl_mem d_bluelight;
 
 	cl_event start, stop;
 	start = clCreateUserEvent(__cu2cl_Context, &err);
+	printf("Event start creation: %s\n", getErrorString(err));
+
 	stop = clCreateUserEvent(__cu2cl_Context, &err);
+	printf("Event stop creation: %s\n", getErrorString(err));	
 
 	clEnqueueMarker(__cu2cl_CommandQueue, &start);
 
 	cl_command_queue s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
-	*&s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
-	*&s4 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL); *&s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
+	s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	printf("clCreateCommandQueue s1: %s\n", getErrorString(err));
+
+	s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	printf("clCreateCommandQueue s2: %s\n", getErrorString(err));
+
+	s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	printf("clCreateCommandQueue s3: %s\n", getErrorString(err));
+
+	s4 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err); 
+	printf("clCreateCommandQueue s4: %s\n", getErrorString(err));
+
+	s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err); 
+	printf("clCreateCommandQueue s5: %s\n", getErrorString(err));
+
+	s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	printf("clCreateCommandQueue s6: %s\n", getErrorString(err));
 
 	// Allotting memory for splitting the image into its different channels in GPU
-	*&d_red = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_green = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_blue = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
+	d_red = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for input red channel: %s\n", getErrorString(err));
+
+	d_green = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for input green channel: %s\n", getErrorString(err));
+
+	d_blue = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for input blue channel: %s\n", getErrorString(err));
 
 	// Alloting memory for the output images in the GPU
-	*&d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
-	*&d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
-	*&d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, NULL);
-	clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
+	d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
+	printf("Mem allotment for input image: %s\n", getErrorString(err));
+
+	d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
+	printf("Mem allotment for output image 1: %s\n", getErrorString(err));
+
+	d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
+	printf("Mem allotment for output image 2: %s\n", getErrorString(err));
+
+	err = clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
+	printf("Mem copy of image: %s\n", getErrorString(err));
+
 
 	// Alloting memory for each output channel on the GPU
 	// For box blur
-	*&d_redBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_greenBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_blueBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
+	d_redBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output red blurred channel: %s\n", getErrorString(err));
+
+	d_greenBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output green blurred channel: %s\n", getErrorString(err));
+
+	d_blueBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output blue blurred channel: %s\n", getErrorString(err));
 
 	// For light edge filter
-	*&d_redlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_greenlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
-	*&d_bluelight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, NULL);
+	d_redlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output red light edge channel: %s\n", getErrorString(err));
+
+	d_greenlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output green light edge channel: %s\n", getErrorString(err));
+
+	d_bluelight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
+	printf("Mem allotment for output blue light edge channel: %s\n", getErrorString(err));
 
 	clFinish(__cu2cl_CommandQueue);
 
@@ -317,167 +358,182 @@ cl_mem d_bluelight;
 	const size_t gridSize[3] = {(cols / blockSize[0]) + 1, (rows / blockSize[1]) + 1, 1};
 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_separateChannels, 0, sizeof(cl_mem), &d_inputImageRGBA);
-clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
-clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
-clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
-clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 0, sizeof(cl_mem), &d_inputImageRGBA);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
+
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
+
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
+
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err)); 
+	
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err)); 
+	
+	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
+	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
 
 localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0]; 
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1]; 
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2]; 
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = gridSize[0] * localWorkSize[0];
+	globalWorkSize[1] = gridSize[1] * localWorkSize[1];
+	globalWorkSize[2] = gridSize[2] * localWorkSize[2];
 
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+	printf("Total threads = %d*%d*%d = %d\n", globalWorkSize[0], globalWorkSize[1], globalWorkSize[2], globalWorkSize[0]* globalWorkSize[1]* globalWorkSize[2]);
+	printf("Threads per group = %d*%d*%d = %d\n", localWorkSize[0], localWorkSize[1], localWorkSize[2], localWorkSize[0]* localWorkSize[1]* localWorkSize[2]);
+
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
 	clFinish(__cu2cl_CommandQueue);
-
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_red);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_red);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
 
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0]; 
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1]; 
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2]; 
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0]; 
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1]; 
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2]; 
+	*/
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_green);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_green);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_blue);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
 
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_red);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_blue);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_green);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_blue);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
 
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+		clFinish(__cu2cl_CommandQueue);
 
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_red);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+		err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+		err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redlight);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+	/*
+	localWorkSize[0] = blockSize[0];
+	localWorkSize[1] = blockSize[1];
+	localWorkSize[2] = blockSize[2];
+	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
+	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
+	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
+	*/
 
-
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_green);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-
-
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_blue);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-
-
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
 
 	clFinish(__cu2cl_CommandQueue);
-
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-
-
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-	clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redlight);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-
-localWorkSize[0] = blockSize[0];
-localWorkSize[1] = blockSize[1];
-localWorkSize[2] = blockSize[2];
-globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-
-
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-
-	clFinish(__cu2cl_CommandQueue);
-
+	
 	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
 	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
 
 	float milliseconds = 0;
+	clFinish(__cu2cl_CommandQueue);	
 	clEnqueueMarker(__cu2cl_CommandQueue, &stop);
-	clWaitForEvents(1, &stop);
+
 	__cu2cl_EventElapsedTime(&milliseconds, start, stop);
 
 	printf("Total time taken for both filters for image of size %d,%d on GPU: %f ms\n", cols, rows, milliseconds);
@@ -497,5 +553,3 @@ clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1
 	return 0;
 __cu2cl_Cleanup();
 }
-
-
