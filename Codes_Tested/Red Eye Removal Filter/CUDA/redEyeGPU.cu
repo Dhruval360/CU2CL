@@ -13,7 +13,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 // #include "loadSaveImage.h"
-#include <stdio.h>
+
 
 __global__ void naive_normalized_cross_correlation(
     float* d_response,
@@ -404,7 +404,7 @@ void radix_sort(unsigned int* const d_inputVals,
       // checkCudaErrors(cudaGetLastError());
     }
     // calculate the move positions
-    move_kernel <<< hist_block_dim, thread_dim>>>(
+    move_kernel <<<hist_block_dim, thread_dim>>>(
       pass,
       d_inputVals,
       d_inputPos,

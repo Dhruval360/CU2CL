@@ -1029,7 +1029,7 @@ private:
             //Check base Expr, if DeclRefExpr and a dim3, then rewrite
             if (DeclRefExpr *dre = dyn_cast<DeclRefExpr>(me->getBase())) {
                 std::string type = dre->getDecl()->getType().getAsString();
-                if (type == "dim3") {
+                if (type == "dim3" || type == "const dim3") {
                     std::string name = me->getMemberDecl()->getNameAsString();
                     if (name == "x") {
                         name = "[0]";
@@ -1064,7 +1064,7 @@ private:
             QualType qt = tl.getType();
             std::string type = qt.getAsString();
 
-            if (type == "dim3") {
+            if (type == "dim3" || type == "const dim3") {
                 if (origTL.getTypePtr()->isPointerType())
                     RewriteType(tl, "size_t *", exprRewriter);
                 else
@@ -1103,7 +1103,7 @@ private:
                 QualType qt = tl.getType();
                 std::string type = qt.getAsString();
 
-                if (type == "dim3") {
+                if (type == "dim3" || type == "const dim3") {
                     RewriteType(tl, "size_t[3]", exprRewriter);
                 }
                 else if (type == "struct cudaDeviceProp") {
@@ -1135,7 +1135,7 @@ private:
             QualType qt = t->getCanonicalTypeInternal();
             std::string type = qt.getAsString();
 
-            if (type == "struct dim3") {
+            if (type == "struct dim3" || type == "const struct dim3") {
                 std::string args = "{";
                 for (CXXConstructExpr::arg_iterator i = cte->arg_begin(),
                         e = cte->arg_end(); i != e; ++i) {
@@ -1164,7 +1164,7 @@ private:
             QualType qt = t->getCanonicalTypeInternal();
             std::string type = qt.getAsString();
 
-            if (type == "struct dim3") {
+            if (type == "struct dim3" || type == "const struct dim3") {
                 if (cce->getNumArgs() == 1) {
                     //Rewrite subexpression
                     bool ret = false;
@@ -1762,7 +1762,7 @@ private:
             //Variable passed
             ValueDecl *value = dre->getDecl();
             std::string type = value->getType().getAsString();
-            if (type == "dim3") {
+            if (type == "dim3" || type == "const dim3") {
                 dims = 3;
                 for (unsigned int i = 0; i < 3; i++)
                     args << "localWorkSize[" << i << "] = " << value->getNameAsString() << "[" << i << "];\n";
@@ -1805,7 +1805,7 @@ private:
             //Variable passed
             ValueDecl *value = dre->getDecl();
             std::string type = value->getType().getAsString();
-            if (type == "dim3") {
+            if (type == "dim3" || type == "const dim3") {
                 dims = 3;
                 for (unsigned int i = 0; i < 3; i++)
                     args << "globalWorkSize[" << i << "] = " << value->getNameAsString() << "[" << i << "]*localWorkSize[" << i << "];\n";
@@ -1873,7 +1873,7 @@ private:
         //Rewrite var type
         if (LastLoc.isNull() || origTL.getBeginLoc() != LastLoc.getBeginLoc()) {
             LastLoc = origTL;
-            if (type == "dim3") {
+            if (type == "dim3" || type == "const dim3") {
                 //Rewrite to size_t[3] array
                 RewriteType(tl, "size_t", HostReplace);
             }
@@ -1920,7 +1920,7 @@ private:
             bool deferInsert = false;
             if (RewriteHostExpr(e, s)) {
                 //Special cases for dim3s
-                if (type == "dim3") {
+                if (type == "dim3" || type == "const dim3") {
                     CXXConstructExpr *cce = dyn_cast<CXXConstructExpr>(e);
                     if (cce && cce->getNumArgs() > 1) {
                         SourceRange parenRange = cce->getParenOrBraceRange();
@@ -2104,7 +2104,7 @@ private:
                 QualType qt = tl.getType();
                 std::string type = qt.getAsString();
 
-                if (type == "dim3") {
+                if (type == "dim3" || type == "const dim3") {
                     std::string name = dre->getDecl()->getNameAsString();
                     if (name == "blockDim")
                         newExpr = "get_local_size";
@@ -2188,7 +2188,36 @@ private:
             if (funcName == "__syncthreads") {
                 newExpr = "barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE)";
             }
-
+            else if (funcName.substr(0, 5) == "make_")
+            {
+                if (funcName.substr(5, 8) == "longlong")
+                {
+                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n";
+                    newExpr += "(long)(";
+                }
+                else if (funcName.substr(5, 9) == "ulonglong")
+                {
+                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by ulong*/\n";
+                    newExpr += "(ulong)(";
+                }
+                else
+                {
+                    newExpr = "(" + funcName.substr(5) + ")(";
+                }
+                int num_arguments = funcName[funcName.length() - 1] - '0';
+                Expr* x; std::string newX;
+                for (int i = 0; i < (num_arguments - 1); i++)
+                {
+                    x = ce->getArg(i);
+                    newX = "";
+                    RewriteKernelExpr(x, newX);
+                    newExpr += newX + ",";
+                }
+                x = ce->getArg(num_arguments - 1);
+                newX = "";
+                RewriteKernelExpr(x, newX);
+                newExpr += newX + ")";
+            }
             //begin single precision math API
             else if (funcName == "acosf") {
                 Expr *x = ce->getArg(0);
@@ -3425,6 +3454,24 @@ private:
                 RewriteKernelExpr(y, newY);
                 newExpr = "atomic_xor(" + newX + ", " + newY + ")";
             }
+            else if (funcName == "min")
+            {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "(" + newX + ") < (" + newY + ") ? (" + newX + ") : (" + newY + ")";
+            }
+            else if (funcName == "max")
+            {
+                Expr *x = ce->getArg(0);
+                Expr *y = ce->getArg(1);
+                std::string newX, newY;
+                RewriteKernelExpr(x, newX);
+                RewriteKernelExpr(y, newY);
+                newExpr = "(" + newX + ") > (" + newY + ") ? (" + newX + ") : (" + newY + ")";
+            }
             else {
                 //TODO: Make sure every possible function call goes through here, or else we may not get rewrites on interior nested calls.
                 // any unsupported call should throw an error, but still convert interior nesting.
@@ -3490,7 +3537,7 @@ private:
         //Rewrite var type
         if (LastLoc.isNull() || origTL.getBeginLoc() != LastLoc.getBeginLoc()) {
             LastLoc = origTL;
-            if (type == "dim3") {
+            if (type == "dim3" || type == "const dim3") {
                 //Rewrite to size_t[3] array
                 RewriteType(tl, "size_t", KernReplace);
             }
@@ -3508,7 +3555,7 @@ private:
             std::string s;
             if (RewriteKernelExpr(e, s)) {
                 //Special cases for dim3s
-                if (type == "dim3") {
+                if (type == "dim3" || type == "const dim3") {
                     //TODO fix case of dim3 c = b;
                     CXXConstructExpr *cce = dyn_cast<CXXConstructExpr>(e);
                     if (cce && cce->getNumArgs() > 1) {
