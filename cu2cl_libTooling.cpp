@@ -195,7 +195,7 @@
     "cl_int __cu2cl_CommandQueueQuery(cl_command_queue commands) {\n" \
     "   cl_int ret;\n" \
     "   cl_event event;\n" \
-    "   clEnqueueMarker(commands, &event);\n" \
+    "   err = clEnqueueMarker(commands, &event);\n" \
     "   clGetEventInfo(commands, &event);\n" \
     "}\n\n"
 
@@ -1408,7 +1408,7 @@ private:
             //If stream == 0, then cl_command_queue == __cu2cl_CommandQueue
             if (newStream == "0" || (newStream.length() == 0)) // As the user need not pass 0 since its a default parameter
                 newStream = "__cu2cl_CommandQueue";
-            newExpr = "clEnqueueMarker(" + newStream + ", &" + newEvent + ")";
+            newExpr = "err = clEnqueueMarker(" + newStream + ", &" + newEvent + ");\n//printf(\"clEnqueMarker for the event " + newEvent + ": %s\\n\", getErrorString(err))";
         }
         else if (funcName == "cudaEventSynchronize") {
             //Replace with clWaitForEvents
@@ -1579,15 +1579,15 @@ private:
             }
             else if (enumString == "cudaMemcpyHostToDevice") {
                 //clEnqueueWriteBuffer
-                newExpr = "clEnqueueWriteBuffer(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL)";
+                newExpr = "err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL);\n//printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDest + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToHost") {
                 //clEnqueueReadBuffer
-                newExpr = "clEnqueueReadBuffer(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL)";
+                newExpr = "err = clEnqueueReadBuffer(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDest + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
-                newExpr = "clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL)";
+                newExpr = "err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDest + ": %s\\n\", getErrorString(err))";
             }
             else {
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
@@ -1631,18 +1631,18 @@ private:
                 dr = FindStmt<DeclRefExpr>(src);
                 VarDecl *var = dyn_cast<VarDecl>(dr->getDecl());
                 llvm::StringRef varName = var->getName();
-                newExpr = "clEnqueueWriteBuffer(" + newStream + ", " + newDst + ", CL_FALSE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL)";
+                newExpr = "err = clEnqueueWriteBuffer(" + newStream + ", " + newDst + ", CL_FALSE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL);\n//printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + " in stream " + newStream + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToHost") {
                 //clEnqueueReadBuffer, dst is HostMemVar
                 dr = FindStmt<DeclRefExpr>(dst);
                 VarDecl *var = dyn_cast<VarDecl>(dr->getDecl());
                 llvm::StringRef varName = var->getName();
-                newExpr = "clEnqueueReadBuffer(" + newStream + ", " + newSrc + ", CL_FALSE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL)";
+                newExpr = "clEnqueueReadBuffer(" + newStream + ", " + newSrc + ", CL_FALSE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + " in stream " + newStream + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
-                newExpr = "clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL)";
+                newExpr = "clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + " in stream " + newStream + ": %s\\n\", getErrorString(err))";
             }
             else {
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
@@ -1703,7 +1703,7 @@ private:
                 //make a temporary variable to hold this value, pass it, and destroy it
                 //TODO: Do this in a separate block to guarantee scope
                 args << arg->getType().getAsString() << " __cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << " = " << newArg << ";\n";
-                args << "err = clSetKernelArg(" << kernelName << ", " << i << ", sizeof(" << arg->getType().getAsString() << "), &__cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << ");\n//printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << " is: %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg\n";
+                args << "err = clSetKernelArg(" << kernelName << ", " << i << ", sizeof(" << arg->getType().getAsString() << "), &__cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << ");\n/*printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << " is: %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/\n";
 
                 std::stringstream comment;
                 comment << "Inserted temporary variable for kernel literal argument " << i << "!";
@@ -1721,7 +1721,7 @@ private:
                 else {
                     args << arg->getType().getAsString();
                 }
-                args << "), &" << newArg << ");\n//printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << " is: %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg\n";
+                args << "), &" << newArg << ");\n/*printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << " is: %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/\n";
             }
         }
 
@@ -1817,7 +1817,7 @@ private:
             RewriteHostExpr(arg, s);
             args << "globalWorkSize[0] = (" << s << ")*localWorkSize[0];\n";
         }
-        args << "clEnqueueNDRangeKernel(__cu2cl_CommandQueue, " << kernelName << ", " << dims << ", NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)";
+        args << "err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, " << kernelName << ", " << dims << ", NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);\n//printf(\"clEnqueueNDRangeKernel for the kernel " + kernelName + ": %s\\n\", getErrorString(err))";
 
         return args.str();
     }
@@ -4156,12 +4156,12 @@ public:
             CLInit += "    err = clBuildProgram(__cu2cl_Program_" + file + ", 1, &__cu2cl_Device, \"-I . ";
             CLInit += ExtraBuildArgs;
             CLInit += "\", NULL, NULL);\n";
-            CLInit += "    //printf(\"clBuildProgram : %s\", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram";
+            CLInit += "    /*printf(\"clBuildProgram : %s\\n\", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/\n";
             CLInit += "    if(err != CL_SUCCESS){";
             CLInit += "        std::vector<char> buildLog;";
             CLInit += "        size_t logSize;";
             CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Program_" + file + ", &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);";
-            CLInit += "        printf(\"clGetProgramBuildInfo : %s\n\", getErrorString(err));";
+            CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));";
             CLInit += "        buildLog.resize(logSize);";
             CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);";
             CLInit += "        std::cout << &buildLog[0] << '\n';";
@@ -4170,7 +4170,7 @@ public:
             for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {
                 std::string kernelName = (*li).str();
                 CLInit += "    __cu2cl_Kernel_" + kernelName + " = clCreateKernel(__cu2cl_Program_" + file + ", \"" + kernelName + "\", &err);\n";
-                CLInit += "    //printf(\"__cu2cl_Kernel_" + (*i) + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + (*i) +'\n';
+                CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName +"*/\n";
             }
             CLInit += "}\n\n";
             //Add the initializer to a deferred list of boilerplate
@@ -4613,12 +4613,12 @@ int main(int argc, const char ** argv) {
         CU2CLInit += "    err = clBuildProgram(__cu2cl_Util_Program, 1, &__cu2cl_Device, \"-I . ";
         CU2CLInit += ExtraBuildArgs;
         CU2CLInit += "\", NULL, NULL);\n";
-        CU2CLInit += "    //printf(\"clBuildProgram : %s\", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram";
+        CU2CLInit += "    //printf(\"clBuildProgram : %s\\n\", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram\n";
         CU2CLInit += "    if(err != CL_SUCCESS){";
         CU2CLInit += "        std::vector<char> buildLogUtil;";
         CU2CLInit += "        size_t logSizeUtil;";
         CU2CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Util_Program, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSizeUtil);";
-        CU2CLInit += "        printf(\"clGetProgramBuildInfo : %s\n\", getErrorString(err));";
+        CU2CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));";
         CU2CLInit += "        buildLogUtil.resize(logSizeUtil);";
         CU2CLInit += "        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], nullptr);";
         CU2CLInit += "        std::cout << &buildLogUtil[0] << '\n';";
@@ -4627,7 +4627,7 @@ int main(int argc, const char ** argv) {
         for (std::vector<std::string>::iterator i = UtilKernels.begin(), e = UtilKernels.end();
                 i != e; i++) {
             CU2CLInit += "    __cu2cl_Kernel_" + (*i) + " = clCreateKernel(__cu2cl_Util_Program, \"" + (*i) + "\", &err);\n";
-            CU2CLInit += "    //printf(\"__cu2cl_Kernel_" + (*i) + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: " + (*i) +'\n';
+            CU2CLInit += "    /*printf(\"__cu2cl_Kernel_" + (*i) + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: " + (*i) + "*/\n";
         }
 
         //Cleanup the kernels and associated program
