@@ -7,42 +7,29 @@
 *
 *   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
-#include "cu2cl_util.h"
-extern cl_kernel __cu2cl_Kernel_kernel;
-extern cl_program __cu2cl_Program_stream_cu;
-const char *progSrc;
-size_t progLen;
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
+#include <stdlib.h>
+#include <stdio.h>
 
-cl_platform_id __cu2cl_Platform;
-cl_device_id __cu2cl_Device;
-cl_context __cu2cl_Context;
-cl_command_queue __cu2cl_CommandQueue;
+#ifdef __cplusplus
+extern "C" {
+#endif
+void __cu2cl_Init();
 
-size_t globalWorkSize[3];
-size_t localWorkSize[3];
-size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc) {
-    FILE *f = fopen(filename, "r");
-    fseek(f, 0, SEEK_END);
-    size_t len = (size_t) ftell(f);
-    *progSrc = (const char *) malloc(sizeof(char)*len);
-    rewind(f);
-    fread((void *) *progSrc, len, 1, f);
-    fclose(f);
-    return len;
+void __cu2cl_Cleanup();
+size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
+
+cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end);
+
+void __cu2cl_Init_Parallel_gpu_cu();
+
+void __cu2cl_Cleanup_Parallel_gpu_cu();
+
+
+#ifdef __cplusplus
 }
-
-
-void __cu2cl_Init() {
-    clGetPlatformIDs(1, &__cu2cl_Platform, NULL);
-    clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
-    __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
-    __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-//printf("Creation of main command queue is: %s", getErrorString(err));
-    __cu2cl_Init_stream_cu();
-}
-
-void __cu2cl_Cleanup() {
-    __cu2cl_Cleanup_stream_cu();
-    clReleaseCommandQueue(__cu2cl_CommandQueue);
-    clReleaseContext(__cu2cl_Context);
-}
+#endif

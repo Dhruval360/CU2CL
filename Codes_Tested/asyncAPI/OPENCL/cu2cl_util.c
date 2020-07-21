@@ -64,7 +64,8 @@ void __cu2cl_Init() {
     clGetPlatformIDs(1, &__cu2cl_Platform, NULL);
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
-    __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
+    __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("Creation of main command queue is: %s", getErrorString(err));
     __cu2cl_Init_asyncAPI_cu();
 }
 

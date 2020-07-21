@@ -8,8 +8,8 @@
 *   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 #include "cu2cl_util.h"
-//extern cl_kernel __cu2cl_Kernel_device_add;
-//extern cl_program __cu2cl_Program_vectorAdd_cu;
+extern cl_kernel __cu2cl_Kernel_device_add;
+extern cl_program __cu2cl_Program_vectorAdd_cu;
 const char *progSrc;
 size_t progLen;
 
@@ -21,17 +21,12 @@ cl_command_queue __cu2cl_CommandQueue;
 size_t globalWorkSize[3];
 size_t localWorkSize[3];
 size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc) {
-    printf("%s\n",filename);
-    FILE* f = fopen(filename, "r");
-    if (f == NULL)
-    {
-        printf("wrong\n");return 0;
-    }
+    FILE *f = fopen(filename, "r");
     fseek(f, 0, SEEK_END);
-    size_t len = (size_t)ftell(f);
-    *progSrc = (const char*)malloc(sizeof(char) * len);
+    size_t len = (size_t) ftell(f);
+    *progSrc = (const char *) malloc(sizeof(char)*len);
     rewind(f);
-    fread((void*)*progSrc, len, 1, f);
+    fread((void *) *progSrc, len, 1, f);
     fclose(f);
     return len;
 }
@@ -41,7 +36,8 @@ void __cu2cl_Init() {
     clGetPlatformIDs(1, &__cu2cl_Platform, NULL);
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
-    __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, NULL);
+    __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("Creation of main command queue is: %s", getErrorString(err));
     __cu2cl_Init_vectorAdd_cu();
 }
 

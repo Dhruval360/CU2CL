@@ -1,23 +1,3 @@
-#ifdef __APPLE__
-#include <OpenCL/opencl.h>
-#else
-#include <CL/opencl.h>
-#endif
-#include <stdlib.h>
-#include <stdio.h>
-#include "cu2cl_util.h"
-
-#include<time.h>
-
-#include <stdio.h>
-
-//OpenCV stuff
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/opencv.hpp>
-
-//I manually moved the headers to the top
-
 cl_kernel __cu2cl_Kernel_box_blur;
 cl_kernel __cu2cl_Kernel_light_edge_detection;
 cl_kernel __cu2cl_Kernel_separateChannels;
@@ -43,97 +23,56 @@ void __cu2cl_Cleanup_BoxBlur_TotalVariation_cu() {
 void __cu2cl_Init_BoxBlur_TotalVariation_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation_cu_cl.aocx", &progSrc);
-    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, NULL);
+    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
     #else
     progLen = __cu2cl_LoadProgramSource("BoxBlur_TotalVariation.cu-cl.cl", &progSrc);
-    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, NULL);
-    #endif
+    __cu2cl_Program_BoxBlur_TotalVariation_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
+    //printf("clCreateProgramWithSource for BoxBlur_TotalVariation.cu-cl.cl: %s
+", getErrorString(err));    #endif
     free((void *) progSrc);
-    clBuildProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-    __cu2cl_Kernel_box_blur = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "box_blur", NULL);
-    __cu2cl_Kernel_light_edge_detection = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "light_edge_detection", NULL);
-    __cu2cl_Kernel_separateChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "separateChannels", NULL);
-    __cu2cl_Kernel_recombineChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "recombineChannels", NULL);
+    err = clBuildProgram(__cu2cl_Program_BoxBlur_TotalVariation_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
+    /*printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/
+    if(err != CL_SUCCESS){        std::vector<char> buildLog;        size_t logSize;        err = clGetProgramBuildInfo(__cu2cl_Program_BoxBlur_TotalVariation_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));        buildLog.resize(logSize);        clGetProgramBuildInfo(__cu2cl_Program_BoxBlur_TotalVariation_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);        std::cout << &buildLog[0] << '
+';    }    __cu2cl_Kernel_box_blur = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "box_blur", &err);
+    /*printf("__cu2cl_Kernel_box_blur creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: box_blur*/
+    __cu2cl_Kernel_light_edge_detection = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "light_edge_detection", &err);
+    /*printf("__cu2cl_Kernel_light_edge_detection creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: light_edge_detection*/
+    __cu2cl_Kernel_separateChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "separateChannels", &err);
+    /*printf("__cu2cl_Kernel_separateChannels creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: separateChannels*/
+    __cu2cl_Kernel_recombineChannels = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "recombineChannels", &err);
+    /*printf("__cu2cl_Kernel_recombineChannels creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: recombineChannels*/
 }
 
-cl_int err;
-const char *getErrorString(cl_int error){
-switch(error){
-// run-time and JIT compiler errors
-	case 0: return "CL_SUCCESS";
-	case -1: return "CL_DEVICE_NOT_FOUND";
-	case -2: return "CL_DEVICE_NOT_AVAILABLE";
-	case -3: return "CL_COMPILER_NOT_AVAILABLE";
-	case -4: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
-	case -5: return "CL_OUT_OF_RESOURCES";
-	case -6: return "CL_OUT_OF_HOST_MEMORY";
-	case -7: return "CL_PROFILING_INFO_NOT_AVAILABLE";
-	case -8: return "CL_MEM_COPY_OVERLAP";
-	case -9: return "CL_IMAGE_FORMAT_MISMATCH";
-	case -10: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
-	case -11: return "CL_BUILD_PROGRAM_FAILURE";
-	case -12: return "CL_MAP_FAILURE";
-	case -13: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
-	case -14: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
-	case -15: return "CL_COMPILE_PROGRAM_FAILURE";
-	case -16: return "CL_LINKER_NOT_AVAILABLE";
-	case -17: return "CL_LINK_PROGRAM_FAILURE";
-	case -18: return "CL_DEVICE_PARTITION_FAILED";
-	case -19: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
-	// compile-time errors
-	case -30: return "CL_INVALID_VALUE";
-	case -31: return "CL_INVALID_DEVICE_TYPE";
-	case -32: return "CL_INVALID_PLATFORM";
-	case -33: return "CL_INVALID_DEVICE";
-	case -34: return "CL_INVALID_CONTEXT";
-	case -35: return "CL_INVALID_QUEUE_PROPERTIES";
-	case -36: return "CL_INVALID_COMMAND_QUEUE";
-	case -37: return "CL_INVALID_HOST_PTR";
-	case -38: return "CL_INVALID_MEM_OBJECT";
-	case -39: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
-	case -40: return "CL_INVALID_IMAGE_SIZE";
-	case -41: return "CL_INVALID_SAMPLER";
-	case -42: return "CL_INVALID_BINARY";
-	case -43: return "CL_INVALID_BUILD_OPTIONS";
-	case -44: return "CL_INVALID_PROGRAM";
-	case -45: return "CL_INVALID_PROGRAM_EXECUTABLE";
-	case -46: return "CL_INVALID_KERNEL_NAME";
-	case -47: return "CL_INVALID_KERNEL_DEFINITION";
-	case -48: return "CL_INVALID_KERNEL";
-	case -49: return "CL_INVALID_ARG_INDEX";
-	case -50: return "CL_INVALID_ARG_VALUE";
-	case -51: return "CL_INVALID_ARG_SIZE";
-	case -52: return "CL_INVALID_KERNEL_ARGS";
-	case -53: return "CL_INVALID_WORK_DIMENSION";
-	case -54: return "CL_INVALID_WORK_GROUP_SIZE";
-	case -55: return "CL_INVALID_WORK_ITEM_SIZE";
-	case -56: return "CL_INVALID_GLOBAL_OFFSET";
-	case -57: return "CL_INVALID_EVENT_WAIT_LIST";
-	case -58: return "CL_INVALID_EVENT";
-	case -59: return "CL_INVALID_OPERATION";
-	case -60: return "CL_INVALID_GL_OBJECT";
-	case -61: return "CL_INVALID_BUFFER_SIZE";
-	case -62: return "CL_INVALID_MIP_LEVEL";
-	case -63: return "CL_INVALID_GLOBAL_WORK_SIZE";
-	case -64: return "CL_INVALID_PROPERTY";
-	case -65: return "CL_INVALID_IMAGE_DESCRIPTOR";
-	case -66: return "CL_INVALID_COMPILER_OPTIONS";
-	case -67: return "CL_INVALID_LINKER_OPTIONS";
-	case -68: return "CL_INVALID_DEVICE_PARTITION_COUNT";
-	// extension errors
-	case -1000: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
-	case -1001: return "CL_PLATFORM_NOT_FOUND_KHR";
-	case -1002: return "CL_INVALID_D3D10_DEVICE_KHR";
-	case -1003: return "CL_INVALID_D3D10_RESOURCE_KHR";
-	case -1004: return "CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR";
-	case -1005: return "CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR";
-	default: return "Unknown OpenCL error";
-}
-}
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/opencl.h>
+#endif
+#include <stdlib.h>
+#include <stdio.h>
+#include "cu2cl_util.h"
 
+
+
+
+
+#include "device_launch_parameters.h-cl.h"
+
+#include<time.h>
+
+#include <stdio.h>
+
+//OpenCV stuff
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 using namespace cv;
 
-// I learnt about vector notaion in c++ and now know that cl_uchar4* is a 2D array of 4 element vectors of unsigned char type.  
+// I learnt about vector notaion in c++ and now know that uchar4* is a 2D array of 4 element vectors of unsigned char type.  
 
 
 
@@ -191,6 +130,10 @@ void serial_light_edge_detection(const Mat inputImage, Mat outputImage, int rows
 	}
 }
 
+
+
+
+
 int main()
 {
 __cu2cl_Init();
@@ -204,34 +147,34 @@ __cu2cl_Init();
 		exit(1);
 	}
 
-	char output_file[] = "1/Blurred_GPU.jpg";
-	char output_file2[] = "1/TotalVariationFilter_GPU.jpg";
-	char output_file3[] = "1/Blurred_CPU.jpg";
-	char output_file4[] = "1/TotalVariationFilter_CPU.jpg";
+	char output_file[] = "Images set 1/Blurred_GPU.jpg";
+	char output_file2[] = "Images set 1/TotalVariationFilter_GPU.jpg";
+	char output_file3[] = "Images set 1/Blurred_CPU.jpg";
+	char output_file4[] = "Images set 1/TotalVariationFilter_CPU.jpg";
 
 	int filterWidth = 9; // For the box blur
 	int divFactor = filterWidth * filterWidth; // For dividing the sum of neighbouring pixel values after summation for the box filter for normalization
 
 	// For all the variable names I have used the convention I learnt from the udacity course that h_ represents host (CPU) variable and d_ represents device (GPU) variable
-	cl_uchar4 *h_inputImageRGBA;
-	cl_mem d_inputImageRGBA;
+	uchar4 *h_inputImageRGBA;
+cl_mem d_inputImageRGBA;
 	cv::Mat inputImageRGBA;
 
 	// For box blur
 	cl_mem d_outputImageRGBA;
 	cl_mem d_redBlurred;
-	cl_mem d_greenBlurred;
-	cl_mem d_blueBlurred;
+cl_mem d_greenBlurred;
+cl_mem d_blueBlurred;
 	cl_mem d_red;
-	cl_mem d_green;
-	cl_mem d_blue;
+cl_mem d_green;
+cl_mem d_blue;
 	cv::Mat outputImageRGBA;
 
 	// For light edge
 	cl_mem d_outputImageRGBA2;
 	cl_mem d_redlight;
-	cl_mem d_greenlight;
-	cl_mem d_bluelight;
+cl_mem d_greenlight;
+cl_mem d_bluelight;
 	cv::Mat outputImageRGBA2; // Light edge filter application
 
 	int cols = image.cols;
@@ -277,263 +220,266 @@ __cu2cl_Init();
 	outputImageRGBA.create(rows, cols, CV_8UC4);
 	outputImageRGBA2.create(rows, cols, CV_8UC4);
 
-	h_inputImageRGBA = (cl_uchar4*)inputImageRGBA.ptr<unsigned char>(0);
+	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
-	start = clCreateUserEvent(__cu2cl_Context, &err);
-	printf("Event start creation: %s\n", getErrorString(err));
+	start;
+	stop;
 
-	stop = clCreateUserEvent(__cu2cl_Context, &err);
-	printf("Event stop creation: %s\n", getErrorString(err));	
-
-	clEnqueueMarker(__cu2cl_CommandQueue, &start);
+	err = clEnqueueMarker(__cu2cl_CommandQueue, &start);
+//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
 
 	cl_command_queue s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
 	s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-	printf("clCreateCommandQueue s1: %s\n", getErrorString(err));
-
-	s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-	printf("clCreateCommandQueue s2: %s\n", getErrorString(err));
-
-	s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-	printf("clCreateCommandQueue s3: %s\n", getErrorString(err));
-
-	s4 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err); 
-	printf("clCreateCommandQueue s4: %s\n", getErrorString(err));
-
-	s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err); 
-	printf("clCreateCommandQueue s5: %s\n", getErrorString(err));
-
-	s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-	printf("clCreateCommandQueue s6: %s\n", getErrorString(err));
+//printf("clCreateCommandQueue for stream s1 is: %s\n", getErrorString(err)); s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("clCreateCommandQueue for stream s2 is: %s\n", getErrorString(err)); s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("clCreateCommandQueue for stream s3 is: %s\n", getErrorString(err));
+	s4 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("clCreateCommandQueue for stream s4 is: %s\n", getErrorString(err)); s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("clCreateCommandQueue for stream s5 is: %s\n", getErrorString(err)); s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+//printf("clCreateCommandQueue for stream s6 is: %s\n", getErrorString(err));
 
 	// Allotting memory for splitting the image into its different channels in GPU
 	d_red = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for input red channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_red is: %s\n", getErrorString(err));
 	d_green = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for input green channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_green is: %s\n", getErrorString(err));
 	d_blue = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for input blue channel: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable d_blue is: %s\n", getErrorString(err));
 
 	// Alloting memory for the output images in the GPU
-	d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
-	printf("Mem allotment for input image: %s\n", getErrorString(err));
-
-	d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
-	printf("Mem allotment for output image 1: %s\n", getErrorString(err));
-
-	d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * totalPixels, NULL, &err);
-	printf("Mem allotment for output image 2: %s\n", getErrorString(err));
-
-	err = clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
-	printf("Mem copy of image: %s\n", getErrorString(err));
-
+	d_inputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, &err);
+//printf("clCreateBuffer for device variable d_inputImageRGBA is: %s\n", getErrorString(err));
+	d_outputImageRGBA = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, &err);
+//printf("clCreateBuffer for device variable d_outputImageRGBA is: %s\n", getErrorString(err));
+	d_outputImageRGBA2 = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * totalPixels, NULL, &err);
+//printf("clCreateBuffer for device variable d_outputImageRGBA2 is: %s\n", getErrorString(err));
+	err = clEnqueueWriteBuffer(s1, d_inputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, h_inputImageRGBA, 0, NULL, NULL);
+//printf("Memory copy from host variable h_inputImageRGBA to device variable d_inputImageRGBA in stream s1: %s\n", getErrorString(err));
 
 	// Alloting memory for each output channel on the GPU
 	// For box blur
 	d_redBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output red blurred channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_redBlurred is: %s\n", getErrorString(err));
 	d_greenBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output green blurred channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_greenBlurred is: %s\n", getErrorString(err));
 	d_blueBlurred = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output blue blurred channel: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable d_blueBlurred is: %s\n", getErrorString(err));
 
 	// For light edge filter
 	d_redlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output red light edge channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_redlight is: %s\n", getErrorString(err));
 	d_greenlight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output green light edge channel: %s\n", getErrorString(err));
-
+//printf("clCreateBuffer for device variable d_greenlight is: %s\n", getErrorString(err));
 	d_bluelight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * totalPixels, NULL, &err);
-	printf("Mem allotment for output blue light edge channel: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable d_bluelight is: %s\n", getErrorString(err));
 
-	clFinish(__cu2cl_CommandQueue);
+	err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
 
 	const size_t blockSize[3] = {32, 32, 1};
 	const size_t gridSize[3] = {(cols / blockSize[0]) + 1, (rows / blockSize[1]) + 1, 1};
 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 0, sizeof(cl_mem), &d_inputImageRGBA);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
-
-	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
-
-	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
-
-	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err)); 
-	
-	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err)); 
-	
-	err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
-	printf("Channel separation clSetKernelArg: %s\n", getErrorString(err));
-
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 1, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 2, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 3, sizeof(cl_mem), &d_red);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 4, sizeof(cl_mem), &d_green);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_separateChannels, 5, sizeof(cl_mem), &d_blue);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_separateChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = gridSize[0] * localWorkSize[0];
-	globalWorkSize[1] = gridSize[1] * localWorkSize[1];
-	globalWorkSize[2] = gridSize[2] * localWorkSize[2];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_separateChannels: %s\n", getErrorString(err));
+	err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
 
-	printf("Total threads = %d*%d*%d = %d\n", globalWorkSize[0], globalWorkSize[1], globalWorkSize[2], globalWorkSize[0]* globalWorkSize[1]* globalWorkSize[2]);
-	printf("Threads per group = %d*%d*%d = %d\n", localWorkSize[0], localWorkSize[1], localWorkSize[2], localWorkSize[0]* localWorkSize[1]* localWorkSize[2]);
-
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	clFinish(__cu2cl_CommandQueue);
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_red);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0]; 
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1]; 
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2]; 
-	*/
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_redBlurred);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_box_blur: %s\n", getErrorString(err));
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_green);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
-
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_greenBlurred);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_box_blur: %s\n", getErrorString(err));
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 0, sizeof(cl_mem), &d_blue);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
-	err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 1, sizeof(cl_mem), &d_blueBlurred);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 4, sizeof(int), &filterWidth);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_box_blur, 5, sizeof(int), &divFactor);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_box_blur is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_box_blur: %s\n", getErrorString(err));
 
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_box_blur, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_red);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
-
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_redlight);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_light_edge_detection: %s\n", getErrorString(err));
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_green);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
-
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_greenlight);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_light_edge_detection: %s\n", getErrorString(err));
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 0, sizeof(cl_mem), &d_blue);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 1, sizeof(cl_mem), &d_bluelight);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 2, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_light_edge_detection, 3, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_light_edge_detection is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_light_edge_detection: %s\n", getErrorString(err));
 
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_detection, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
+	err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
 
-		clFinish(__cu2cl_CommandQueue);
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_recombineChannels: %s\n", getErrorString(err));
+/*CU2CL Note -- Fast-tracked dim3 type without cast*/
+	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redlight);
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_recombineChannels is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+localWorkSize[0] = blockSize[0];
+localWorkSize[1] = blockSize[1];
+localWorkSize[2] = blockSize[2];
+globalWorkSize[0] = gridSize[0]*localWorkSize[0];
+globalWorkSize[1] = gridSize[1]*localWorkSize[1];
+globalWorkSize[2] = gridSize[2]*localWorkSize[2];
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_recombineChannels: %s\n", getErrorString(err));
 
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-		err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_blueBlurred);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
+	err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
 
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-	/*CU2CL Note -- Fast-tracked dim3 type without cast*/
-		err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redlight);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 1, sizeof(cl_mem), &d_greenlight);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 2, sizeof(cl_mem), &d_bluelight);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 3, sizeof(cl_mem), &d_outputImageRGBA2);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 4, sizeof(int), &rows);
-	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 5, sizeof(int), &cols);
-	/*
-	localWorkSize[0] = blockSize[0];
-	localWorkSize[1] = blockSize[1];
-	localWorkSize[2] = blockSize[2];
-	globalWorkSize[0] = (gridSize[0])*localWorkSize[0];
-	globalWorkSize[1] = (gridSize[1])*localWorkSize[1];
-	globalWorkSize[2] = (gridSize[2])*localWorkSize[2];
-	*/
-
-	printf("%s\n", getErrorString(clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChannels, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL)));
-
-	clFinish(__cu2cl_CommandQueue);
-	
-	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
-	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(cl_uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
+	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
+//printf("Memory copy from device variable outputImageRGBA.ptr<unsigned char>(0) to host variable d_outputImageRGBA in stream s1: %s\n", getErrorString(err));
+	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
+//printf("Memory copy from device variable outputImageRGBA2.ptr<unsigned char>(0) to host variable d_outputImageRGBA2 in stream s2: %s\n", getErrorString(err));
 
 	float milliseconds = 0;
-	clFinish(__cu2cl_CommandQueue);	
-	clEnqueueMarker(__cu2cl_CommandQueue, &stop);
-
+	err = clEnqueueMarker(__cu2cl_CommandQueue, &stop);
+//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+	clWaitForEvents(1, &stop);
 	__cu2cl_EventElapsedTime(&milliseconds, start, stop);
 
 	printf("Total time taken for both filters for image of size %d,%d on GPU: %f ms\n", cols, rows, milliseconds);
@@ -553,3 +499,4 @@ localWorkSize[0] = blockSize[0];
 	return 0;
 __cu2cl_Cleanup();
 }
+

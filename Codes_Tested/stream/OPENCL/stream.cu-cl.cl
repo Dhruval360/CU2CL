@@ -1,5 +1,6 @@
 
 
+
 __kernel void kernel(__global float *x, int n)
 {
     int tid = get_local_id(0) + get_group_id(0) * get_local_size(0);

@@ -16,7 +16,7 @@
 #include <stdio.h>
 
 #ifdef __cplusplus
-//extern "C" {
+extern "C" {
 #endif
 void __cu2cl_Init();
 
@@ -29,5 +29,5 @@ void __cu2cl_Cleanup_vectorAdd_cu();
 
 
 #ifdef __cplusplus
-//}
+}
 #endif

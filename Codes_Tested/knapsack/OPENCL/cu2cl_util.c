@@ -8,14 +8,9 @@
 *   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 #include "cu2cl_util.h"
-extern cl_kernel __cu2cl_Kernel_transpose_serial;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_row;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_element;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_element_tiled;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_element_tiled16;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_element_tiled_padded;
-extern cl_kernel __cu2cl_Kernel_transpose_parallel_per_element_tiled_padded16;
-extern cl_program __cu2cl_Program_transpose_cu;
+extern cl_kernel __cu2cl_Kernel_knapsackGPU;
+extern cl_kernel __cu2cl_Kernel_knapsackGPU2;
+extern cl_program __cu2cl_Program_knapsack_cu;
 const char *progSrc;
 size_t progLen;
 
@@ -44,11 +39,11 @@ void __cu2cl_Init() {
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
     __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("Creation of main command queue is: %s", getErrorString(err));
-    __cu2cl_Init_transpose_cu();
+    __cu2cl_Init_knapsack_cu();
 }
 
 void __cu2cl_Cleanup() {
-    __cu2cl_Cleanup_transpose_cu();
+    __cu2cl_Cleanup_knapsack_cu();
     clReleaseCommandQueue(__cu2cl_CommandQueue);
     clReleaseContext(__cu2cl_Context);
 }

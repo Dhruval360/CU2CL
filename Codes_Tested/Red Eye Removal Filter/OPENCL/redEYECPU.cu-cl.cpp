@@ -43,26 +43,18 @@ void __cu2cl_Init_redEYECPU_cu() {
     #else
     progLen = __cu2cl_LoadProgramSource("redEYECPU.cu-cl.cl", &progSrc);
     __cu2cl_Program_redEYECPU_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
-    //printf("clCreateProgramWithSource for redEYECPU.cu-cl.cl: %s\n", getErrorString(err));
-    #endif
+    //printf("clCreateProgramWithSource for redEYECPU.cu-cl.cl: %s
+", getErrorString(err));    #endif
     free((void *) progSrc);
     err = clBuildProgram(__cu2cl_Program_redEYECPU_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-    //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
-    if(err != CL_SUCCESS){
-        std::vector<char> buildLog;
-        size_t logSize;
-        err = clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
-        buildLog.resize(logSize)
-;        clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);
-        std::cout << &buildLog[0] << '
-';
-    }
-
-    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "naive_normalized_cross_correlation", &err);
-    //printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation
+    /*printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/
+    if(err != CL_SUCCESS){        std::vector<char> buildLog;        size_t logSize;        err = clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));        buildLog.resize(logSize);        clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);        std::cout << &buildLog[0] << '
+';    }    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "naive_normalized_cross_correlation", &err);
+    /*printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation*/
     __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "remove_redness_from_coordinates", &err);
-    //printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates
+    /*printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates*/
 }
 
 #include <float.h>
@@ -315,10 +307,14 @@ cl_mem d_g;
         g[i] = (inImg[i].y);
         b[i] = (inImg[i].z);
     }
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_r, CL_TRUE, 0, sizeof(uchar) * numElems, r, 0, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, b, 0, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_b, CL_TRUE, 0, sizeof(uchar) * numElems, b, 0, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_g, CL_TRUE, 0, sizeof(uchar) * numElems, g, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_r, CL_TRUE, 0, sizeof(uchar) * numElems, r, 0, NULL, NULL);
+//printf("Memory copy from host variable r to device variable d_r: %s\n", getErrorString(err));
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, b, 0, NULL, NULL);
+//printf("Memory copy from host variable b to device variable d_op_r: %s\n", getErrorString(err));
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_b, CL_TRUE, 0, sizeof(uchar) * numElems, b, 0, NULL, NULL);
+//printf("Memory copy from host variable b to device variable d_b: %s\n", getErrorString(err));
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_g, CL_TRUE, 0, sizeof(uchar) * numElems, g, 0, NULL, NULL);
+//printf("Memory copy from host variable g to device variable d_g: %s\n", getErrorString(err));
     uchar* rt = new uchar[templateSize];
     uchar* gt = new uchar[templateSize];
     uchar* bt = new uchar[templateSize];
@@ -341,9 +337,12 @@ cl_mem d_gt;
 //printf("clCreateBuffer for device variable *(void**)&d_gt is: %s\n", getErrorString(err));
     *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
 //printf("clCreateBuffer for device variable *(void**)&d_bt is: %s\n", getErrorString(err));
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_rt, CL_TRUE, 0, sizeof(uchar) * templateSize, r, 0, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_bt, CL_TRUE, 0, sizeof(uchar) * templateSize, b, 0, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_gt, CL_TRUE, 0, sizeof(uchar) * templateSize, g, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_rt, CL_TRUE, 0, sizeof(uchar) * templateSize, r, 0, NULL, NULL);
+//printf("Memory copy from host variable r to device variable d_rt: %s\n", getErrorString(err));
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_bt, CL_TRUE, 0, sizeof(uchar) * templateSize, b, 0, NULL, NULL);
+//printf("Memory copy from host variable b to device variable d_bt: %s\n", getErrorString(err));
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_gt, CL_TRUE, 0, sizeof(uchar) * templateSize, g, 0, NULL, NULL);
+//printf("Memory copy from host variable g to device variable d_gt: %s\n", getErrorString(err));
 
     unsigned int r_sum, b_sum, g_sum;
     r_sum = 0;b_sum = 0;g_sum = 0;
@@ -425,9 +424,11 @@ cl_mem d_gt;
     h_red_data = new float[numElems];
     h_green_data = new float[numElems];
     h_blue_data = new float[numElems];
-    clEnqueueReadBu(cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost));
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, blue_data, CL_TRUE, 0, sizeof(float) * numElems, h_blue_data, 0, NULL, NULL);
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, green_data, CL_TRUE, 0, sizeof(float) * numElems, h_green_data, 0, NULL, NULL);
+    err = clEnqueue(cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost));
+    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, blue_data, CL_TRUE, 0, sizeof(float) * numElems, h_blue_data, 0, NULL, NULL);
+//printf("Memory copy from device variable h_blue_data to host variable blue_data: %s\n", getErrorString(err));
+    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, green_data, CL_TRUE, 0, sizeof(float) * numElems, h_green_data, 0, NULL, NULL);
+//printf("Memory copy from device variable h_green_data to host variable green_data: %s\n", getErrorString(err));
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     err = clFinish(__cu2cl_CommandQueue);
 //printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
@@ -482,7 +483,8 @@ cl_mem d_gt;
     cl_mem d_outputPos;
     *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, &err);
 //printf("clCreateBuffer for device variable *(void**)&d_outputPos is: %s\n", getErrorString(err));
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_outputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, outputPos, 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_outputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, outputPos, 0, NULL, NULL);
+//printf("Memory copy from host variable outputPos to device variable d_outputPos: %s\n", getErrorString(err));
 
     remove_redness_from_coordinates << <grid2Size, block2Size >> > (d_outputPos,
         d_r,
@@ -498,7 +500,8 @@ cl_mem d_gt;
 
 
     uchar* h_op_r = new uchar[numElems];
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, h_op_r, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, h_op_r, 0, NULL, NULL);
+//printf("Memory copy from device variable h_op_r to host variable d_op_r: %s\n", getErrorString(err));
     printf("after the kernel\n");
 
     // combine channels

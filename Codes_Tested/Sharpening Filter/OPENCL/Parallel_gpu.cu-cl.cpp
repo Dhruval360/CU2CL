@@ -33,24 +33,15 @@ void __cu2cl_Init_Parallel_gpu_cu() {
     #else
     progLen = __cu2cl_LoadProgramSource("Parallel_gpu.cu-cl.cl", &progSrc);
     __cu2cl_Program_Parallel_gpu_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
-    //printf("clCreateProgramWithSource for Parallel_gpu.cu-cl.cl: %s\n", getErrorString(err));
-    #endif
+    //printf("clCreateProgramWithSource for Parallel_gpu.cu-cl.cl: %s
+", getErrorString(err));    #endif
     free((void *) progSrc);
     err = clBuildProgram(__cu2cl_Program_Parallel_gpu_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-    //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
-    if(err != CL_SUCCESS){
-        std::vector<char> buildLog;
-        size_t logSize;
-        err = clGetProgramBuildInfo(__cu2cl_Program_Parallel_gpu_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
-        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
-        buildLog.resize(logSize)
-;        clGetProgramBuildInfo(__cu2cl_Program_Parallel_gpu_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);
-        std::cout << &buildLog[0] << '
-';
-    }
-
-    __cu2cl_Kernel_sharpeningFilter = clCreateKernel(__cu2cl_Program_Parallel_gpu_cu, "sharpeningFilter", &err);
-    //printf("__cu2cl_Kernel_sharpeningFilter creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: sharpeningFilter
+    /*printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/
+    if(err != CL_SUCCESS){        std::vector<char> buildLog;        size_t logSize;        err = clGetProgramBuildInfo(__cu2cl_Program_Parallel_gpu_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));        buildLog.resize(logSize);        clGetProgramBuildInfo(__cu2cl_Program_Parallel_gpu_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);        std::cout << &buildLog[0] << '
+';    }    __cu2cl_Kernel_sharpeningFilter = clCreateKernel(__cu2cl_Program_Parallel_gpu_cu, "sharpeningFilter", &err);
+    /*printf("__cu2cl_Kernel_sharpeningFilter creation: %s
+", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: sharpeningFilter*/
 }
 
 #include "opencv2/imgproc/imgproc.hpp-cl.h"
@@ -138,7 +129,8 @@ cl_mem d_output;
 //printf("clCreateBuffer for device variable d_output is: %s\n", getErrorString(err));
 
     // Copy data from OpenCV input image to device memory
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_input, CL_TRUE, 0, inputSize, input.ptr(), 0, NULL, NULL);
+    err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_input, CL_TRUE, 0, inputSize, input.ptr(), 0, NULL, NULL);
+//printf("Memory copy from host variable input.ptr() to device variable d_input: %s\n", getErrorString(err));
 
     // Specify block size
     const size_t block[3] = {BLOCK_SIZE, BLOCK_SIZE, 1};
@@ -147,33 +139,37 @@ cl_mem d_output;
     const size_t grid[3] = {(output.cols + block[0] - 1) / block[0], (output.rows + block[1] - 1) / block[1], 1};
 
     // Start time
-    clEnqueueMarker(__cu2cl_CommandQueue, &start);
+    err = clEnqueueMarker(__cu2cl_CommandQueue, &start);
+//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
 
     // Run BoxFilter kernel on CUDA 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
     err = clSetKernelArg(__cu2cl_Kernel_sharpeningFilter, 0, sizeof(cl_mem), &d_input);
-//printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sharpeningFilter, 1, sizeof(cl_mem), &d_output);
-//printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sharpeningFilter, 2, sizeof(unsigned int), &output.cols);
-//printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sharpeningFilter, 3, sizeof(unsigned int), &output.rows);
-//printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sharpeningFilter, 4, sizeof(int), &channel);
-//printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_sharpeningFilter is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = block[0];
 localWorkSize[1] = block[1];
 localWorkSize[2] = block[2];
 globalWorkSize[0] = grid[0]*localWorkSize[0];
 globalWorkSize[1] = grid[1]*localWorkSize[1];
 globalWorkSize[2] = grid[2]*localWorkSize[2];
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_sharpeningFilter, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_sharpeningFilter, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+//printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_sharpeningFilter: %s\n", getErrorString(err));
 
     // Stop time
-    clEnqueueMarker(__cu2cl_CommandQueue, &stop);
+    err = clEnqueueMarker(__cu2cl_CommandQueue, &stop);
+//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
 
     //Copy data from device memory to output image
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, d_output, CL_TRUE, 0, outputSize, output.ptr(), 0, NULL, NULL);
+    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_output, CL_TRUE, 0, outputSize, output.ptr(), 0, NULL, NULL);
+//printf("Memory copy from device variable output.ptr() to host variable d_output: %s\n", getErrorString(err));
 
     //Free the device memory
     clReleaseMemObject(d_input);
