@@ -61,7 +61,7 @@ End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu:162:14: warning: conversion from string literal to 'char *' is deprecated [-Wc++11-compat-deprecated-writable-strings]
   writeImage("fromgpu.png", op2);
              ^
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu Translation Time: 69 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu Translation Time: 65 microseconds
 3 warnings generated.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 CU2CL DEBUG: Rejected propagation of DeclRefExpr d_out not matching Decl d_in

@@ -4139,9 +4139,9 @@ public:
                 GlobalHDecls.push_back("void __cu2cl_Init_" + file + "();\n");
                 CU2CLInit += "    __cu2cl_Init_" + file + "();\n";
             }
-            CLInit += "cl_int err;\n";
+	    CLInit = "cl_int err;\n";
             CLInit += CU2CL_ERROR_HANDLING;
-            CLInit = "void __cu2cl_Init_" + file + "() {\n";
+            CLInit += "void __cu2cl_Init_" + file + "() {\n";
             std::list<llvm::StringRef> &l = (*i).second;
             //Paul: Addition to generate ALTERA .aocx build from binary with an ifdef
             CLInit += "    #ifdef WITH_ALTERA\n";
@@ -4157,15 +4157,15 @@ public:
             CLInit += ExtraBuildArgs;
             CLInit += "\", NULL, NULL);\n";
             CLInit += "    /*printf(\"clBuildProgram : %s\\n\", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/\n";
-            CLInit += "    if(err != CL_SUCCESS){";
-            CLInit += "        std::vector<char> buildLog;";
-            CLInit += "        size_t logSize;";
-            CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Program_" + file + ", &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);";
-            CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));";
-            CLInit += "        buildLog.resize(logSize);";
-            CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);";
-            CLInit += "        std::cout << &buildLog[0] << '\n';";
-            CLInit += "    }";
+            CLInit += "    if(err != CL_SUCCESS){\n";
+            CLInit += "        std::vector<char> buildLog;\n";
+            CLInit += "        size_t logSize;\n";
+            CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Program_" + file + ", &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);\n";
+            CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));\n";
+            CLInit += "        buildLog.resize(logSize);\n";
+            CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);\n";
+            CLInit += "        std::cout << &buildLog[0] << '\\n';\n";
+            CLInit += "    }\n";
             // and initialize all its kernels
             for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {
                 std::string kernelName = (*li).str();
@@ -4177,7 +4177,6 @@ public:
             // to be inserted after relevant cl_program/cl_kernel declarations
             LocalBoilDefs[(*i).first].push_back(CLInit);
         }
-
 
         //Insert cleanup code at bottom of main
         //For each loaded cl_program

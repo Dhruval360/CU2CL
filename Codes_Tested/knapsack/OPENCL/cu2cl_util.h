@@ -23,6 +23,10 @@ void __cu2cl_Init();
 void __cu2cl_Cleanup();
 size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
+void __cu2cl_Init_knap_cu();
+
+void __cu2cl_Cleanup_knap_cu();
+
 void __cu2cl_Init_knapsack_cu();
 
 void __cu2cl_Cleanup_knapsack_cu();
