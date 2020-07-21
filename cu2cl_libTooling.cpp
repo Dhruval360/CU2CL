@@ -4150,7 +4150,7 @@ public:
             CLInit += "    #else\n";
             CLInit += "    progLen = __cu2cl_LoadProgramSource(\"" + kernelNameFilter(filename((*i).first).str()) + "-cl.cl\", &progSrc);\n";
             CLInit += "    __cu2cl_Program_" + file + " = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);\n";
-            CLInit += "    //printf(\"clCreateProgramWithSource for " + kernelNameFilter(filename((*i).first).str()) + "-cl.cl: %s\n\", getErrorString(err));";
+            CLInit += "    //printf(\"clCreateProgramWithSource for " + kernelNameFilter(filename((*i).first).str()) + "-cl.cl: %s\\n\", getErrorString(err));";
             CLInit += "    #endif\n";
             CLInit += "    free((void *) progSrc);\n";
             CLInit += "    err = clBuildProgram(__cu2cl_Program_" + file + ", 1, &__cu2cl_Device, \"-I . ";
