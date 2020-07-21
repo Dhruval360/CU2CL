@@ -1,8 +1,4 @@
 
-#include "device_launch_parameters.h-cl.cl"
-
-
-
 
 
 //OpenCV stuff

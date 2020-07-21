@@ -62,6 +62,8 @@ cl_int __cu2cl_GetDeviceProperties(struct __cu2cl_DeviceProp * prop, cl_device_i
 
 cl_int __cu2cl_EventQuery(cl_event event);
 
+const char *getErrorString(cl_int error);
+
 void __cu2cl_Init_asyncAPI_cu();
 
 void __cu2cl_Cleanup_asyncAPI_cu();

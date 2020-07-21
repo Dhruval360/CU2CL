@@ -23,6 +23,8 @@ void __cu2cl_Init();
 void __cu2cl_Cleanup();
 size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
+const char *getErrorString(cl_int error);
+
 void __cu2cl_Init_transpose_cu();
 
 void __cu2cl_Cleanup_transpose_cu();

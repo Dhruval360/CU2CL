@@ -60,6 +60,8 @@ struct __cu2cl_DeviceProp {
 
 cl_int __cu2cl_GetDeviceProperties(struct __cu2cl_DeviceProp * prop, cl_device_id device);
 
+const char *getErrorString(cl_int error);
+
 void __cu2cl_Init_simpleZeroCopy_cu();
 
 void __cu2cl_Cleanup_simpleZeroCopy_cu();

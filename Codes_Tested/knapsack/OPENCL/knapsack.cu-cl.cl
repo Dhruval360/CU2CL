@@ -2,7 +2,6 @@
 
 
 
-
 #define N 10;
 
 // CPU : 0.001s
@@ -37,7 +36,7 @@
 
 
 
-// two types are shwon below
+// two types are shown below
 
 __kernel void knapsackGPU(__global int* dp, int row, __global int* d_value, __global int* d_weight,int capacity)
 {

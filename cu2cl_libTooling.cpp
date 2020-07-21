@@ -234,7 +234,7 @@
 #define CL_MALLOC_HOST \
     "cl_int __cu2cl_MallocHost(void **ptr, size_t size, cl_mem *clMem) {\n" \
     "    cl_int ret;\n" \
-    "    *clMem = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, size, NULL, &err);\n" \
+    "    *clMem = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, size, NULL, &ret);\n" \
     "    *ptr = clEnqueueMapBuffer(__cu2cl_CommandQueue, *clMem, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &ret);\n" \
     "    return ret;\n" \
     "}\n\n"
@@ -3896,7 +3896,9 @@ public:
             MainFuncName = "main";
         //Ensure that each time a new RewriteCUDA instance is spawned this gets reset
         MainDecl = NULL;
-
+	
+	HostIncludes += "#include <iostream>\n";
+        HostIncludes += "#include <vector>\n";
         HostIncludes += "#ifdef __APPLE__\n";
         HostIncludes += "#include <OpenCL/opencl.h>\n";
         HostIncludes += "#else\n";
@@ -4152,7 +4154,7 @@ public:
             CLInit += "    #else\n";
             CLInit += "    progLen = __cu2cl_LoadProgramSource(\"" + kernelNameFilter(filename((*i).first).str()) + "-cl.cl\", &progSrc);\n";
             CLInit += "    __cu2cl_Program_" + file + " = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);\n";
-            CLInit += "    //printf(\"clCreateProgramWithSource for " + kernelNameFilter(filename((*i).first).str()) + "-cl.cl: %s\\n\", getErrorString(err));";
+            CLInit += "    //printf(\"clCreateProgramWithSource for " + kernelNameFilter(filename((*i).first).str()) + "-cl.cl: %s\\n\", getErrorString(err));\n";
             CLInit += "    #endif\n";
             CLInit += "    free((void *) progSrc);\n";
             CLInit += "    err = clBuildProgram(__cu2cl_Program_" + file + ", 1, &__cu2cl_Device, \"-I . ";
@@ -4162,10 +4164,10 @@ public:
             CLInit += "    if(err != CL_SUCCESS){\n";
             CLInit += "        std::vector<char> buildLog;\n";
             CLInit += "        size_t logSize;\n";
-            CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Program_" + file + ", &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);\n";
+            CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSize);\n";
             CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));\n";
             CLInit += "        buildLog.resize(logSize);\n";
-            CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);\n";
+            CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);\n";
             CLInit += "        std::cout << &buildLog[0] << '\\n';\n";
             CLInit += "    }\n";
             // and initialize all its kernels
@@ -4610,7 +4612,7 @@ int main(int argc, const char ** argv) {
         CU2CLInit += "    #else\n";
         CU2CLInit += "    progLen = __cu2cl_LoadProgramSource(\"cu2cl_util.cl\", &progSrc);\n";
         CU2CLInit += "    __cu2cl_Util_Program = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);\n";
-        CU2CLInit += "    //printf(\"clCreateProgramWithSource for cu2cl_util.cl: %s\n\", getErrorString(err));";
+        CU2CLInit += "    //printf(\"clCreateProgramWithSource for cu2cl_util.cl: %s\n\", getErrorString(err));\n";
         CU2CLInit += "    #endif\n";
         CU2CLInit += "    free((void *) progSrc);\n";
         CU2CLInit += "    err = clBuildProgram(__cu2cl_Util_Program, 1, &__cu2cl_Device, \"-I . ";
@@ -4620,10 +4622,10 @@ int main(int argc, const char ** argv) {
         CU2CLInit += "    if(err != CL_SUCCESS){";
         CU2CLInit += "        std::vector<char> buildLogUtil;";
         CU2CLInit += "        size_t logSizeUtil;";
-        CU2CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Util_Program, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSizeUtil);";
+        CU2CLInit += "        err = clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSizeUtil);";
         CU2CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));";
         CU2CLInit += "        buildLogUtil.resize(logSizeUtil);";
-        CU2CLInit += "        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], nullptr);";
+        CU2CLInit += "        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);";
         CU2CLInit += "        std::cout << &buildLogUtil[0] << '\n';";
         CU2CLInit += "    }";
         // and initialize all its kernels
