@@ -1,4 +1,3 @@
-#include "cuda_runtime.h"
 #include<time.h>
 #include <stdio.h>
 #include<iostream>
@@ -72,7 +71,7 @@ void knapSack(int value[], int weight[], int capacity, int n)
 }
 
 
-// two types are shwon below
+// two types are shown below
 
 __global__ void knapsackGPU(int* dp, int row, int* d_value, int* d_weight,int capacity)
 {

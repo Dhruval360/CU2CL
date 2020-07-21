@@ -4132,15 +4132,17 @@ public:
             // it's quick and dirty but has the nice property of not reordering the data strucutre
             std::string decl = "void __cu2cl_Init_" + file + "();\n";
             std::vector<std::string>::iterator j = GlobalHDecls.begin(), f = GlobalHDecls.end();
-            //Iterate to the end of the vector or til a matching string is found
+            //Iterate to the end of the vector or till a matching string is found
             for (; j != f && (*j) != decl; j++);
+
+            GlobalHDecls.push_back("const char *getErrorString(cl_int error);\n");
 
             if (j == f) { // Not found, add declaration and call
                 GlobalHDecls.push_back("void __cu2cl_Init_" + file + "();\n");
                 CU2CLInit += "    __cu2cl_Init_" + file + "();\n";
             }
-	    CLInit = "cl_int err;\n";
-            CLInit += CU2CL_ERROR_HANDLING;
+	        CLInit = "cl_int err;\n";
+            //CLInit += CU2CL_ERROR_HANDLING;
             CLInit += "void __cu2cl_Init_" + file + "() {\n";
             std::list<llvm::StringRef> &l = (*i).second;
             //Paul: Addition to generate ALTERA .aocx build from binary with an ifdef
@@ -4563,12 +4565,14 @@ int main(int argc, const char ** argv) {
     // instances can contribute their local init calls to it
     //Construct OpenCL initialization boilerplate
 
+    CU2CLInit += CU2CL_ERROR_HANDLING;
     CU2CLInit += "void __cu2cl_Init() {\n";
     GlobalCDecls["cu2cl_util.c"].push_back("const char *progSrc;\n");
     GlobalCDecls["cu2cl_util.c"].push_back("size_t progLen;\n\n");
     //Rather than obviating these lines to support cudaSetDevice, we'll assume these lines
     // are *always* included, and IFF cudaSetDevice is used, include code to instead scan
     // *all* devices, and allow for reinitialization
+    CU2CLInit += "    cl_int err;\n";
     CU2CLInit += "    clGetPlatformIDs(1, &__cu2cl_Platform, NULL);\n";
     CU2CLInit += "    clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);\n";
     CU2CLInit += "    __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);\n";
