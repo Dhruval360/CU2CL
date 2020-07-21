@@ -54,7 +54,7 @@ End of search list.
 #include "helper_cuda.h"
          ^
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu:132:5: CU2CL Unsupported: Unsupported CUDA call: cudaDeviceReset
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu Translation Time: 33 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu Translation Time: 34 microseconds
 1 error generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu.
 Retained 1 ASTContexts!

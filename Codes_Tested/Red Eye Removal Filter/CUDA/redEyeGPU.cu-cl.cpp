@@ -42,100 +42,43 @@ void __cu2cl_Cleanup_redEyeGPU_cu() {
 void __cu2cl_Init_redEyeGPU_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("redEyeGPU_cu_cl.aocx", &progSrc);
-    __cu2cl_Program_redEyeGPU_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, NULL);
+    __cu2cl_Program_redEyeGPU_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
     #else
     progLen = __cu2cl_LoadProgramSource("redEyeGPU.cu-cl.cl", &progSrc);
-    __cu2cl_Program_redEyeGPU_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, NULL);
+    __cu2cl_Program_redEyeGPU_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
+    //printf("clCreateProgramWithSource for redEyeGPU.cu-cl.cl: %s\n", getErrorString(err));
     #endif
     free((void *) progSrc);
-    clBuildProgram(__cu2cl_Program_redEyeGPU_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "naive_normalized_cross_correlation", NULL);
-    __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "remove_redness_from_coordinates", NULL);
-    __cu2cl_Kernel_histogram_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "histogram_kernel", NULL);
-    __cu2cl_Kernel_exclusive_scan_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "exclusive_scan_kernel", NULL);
-    __cu2cl_Kernel_move_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "move_kernel", NULL);
-}
+    err = clBuildProgram(__cu2cl_Program_redEyeGPU_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
+    //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
+    if(err != CL_SUCCESS){
+        std::vector<char> buildLog;
+        size_t logSize;
+        err = clGetProgramBuildInfo(__cu2cl_Program_redEyeGPU_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
+        buildLog.resize(logSize)
+;        clGetProgramBuildInfo(__cu2cl_Program_redEyeGPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);
+        std::cout << &buildLog[0] << '
+';
+    }
 
-cl_int err;
-const char *getErrorString(cl_int error){
-switch(error){
-// run-time and JIT compiler errors
-	case 0: return "CL_SUCCESS";
-	case -1: return "CL_DEVICE_NOT_FOUND";
-	case -2: return "CL_DEVICE_NOT_AVAILABLE";
-	case -3: return "CL_COMPILER_NOT_AVAILABLE";
-	case -4: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
-	case -5: return "CL_OUT_OF_RESOURCES";
-	case -6: return "CL_OUT_OF_HOST_MEMORY";
-	case -7: return "CL_PROFILING_INFO_NOT_AVAILABLE";
-	case -8: return "CL_MEM_COPY_OVERLAP";
-	case -9: return "CL_IMAGE_FORMAT_MISMATCH";
-	case -10: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
-	case -11: return "CL_BUILD_PROGRAM_FAILURE";
-	case -12: return "CL_MAP_FAILURE";
-	case -13: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
-	case -14: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
-	case -15: return "CL_COMPILE_PROGRAM_FAILURE";
-	case -16: return "CL_LINKER_NOT_AVAILABLE";
-	case -17: return "CL_LINK_PROGRAM_FAILURE";
-	case -18: return "CL_DEVICE_PARTITION_FAILED";
-	case -19: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
-	// compile-time errors
-	case -30: return "CL_INVALID_VALUE";
-	case -31: return "CL_INVALID_DEVICE_TYPE";
-	case -32: return "CL_INVALID_PLATFORM";
-	case -33: return "CL_INVALID_DEVICE";
-	case -34: return "CL_INVALID_CONTEXT";
-	case -35: return "CL_INVALID_QUEUE_PROPERTIES";
-	case -36: return "CL_INVALID_COMMAND_QUEUE";
-	case -37: return "CL_INVALID_HOST_PTR";
-	case -38: return "CL_INVALID_MEM_OBJECT";
-	case -39: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
-	case -40: return "CL_INVALID_IMAGE_SIZE";
-	case -41: return "CL_INVALID_SAMPLER";
-	case -42: return "CL_INVALID_BINARY";
-	case -43: return "CL_INVALID_BUILD_OPTIONS";
-	case -44: return "CL_INVALID_PROGRAM";
-	case -45: return "CL_INVALID_PROGRAM_EXECUTABLE";
-	case -46: return "CL_INVALID_KERNEL_NAME";
-	case -47: return "CL_INVALID_KERNEL_DEFINITION";
-	case -48: return "CL_INVALID_KERNEL";
-	case -49: return "CL_INVALID_ARG_INDEX";
-	case -50: return "CL_INVALID_ARG_VALUE";
-	case -51: return "CL_INVALID_ARG_SIZE";
-	case -52: return "CL_INVALID_KERNEL_ARGS";
-	case -53: return "CL_INVALID_WORK_DIMENSION";
-	case -54: return "CL_INVALID_WORK_GROUP_SIZE";
-	case -55: return "CL_INVALID_WORK_ITEM_SIZE";
-	case -56: return "CL_INVALID_GLOBAL_OFFSET";
-	case -57: return "CL_INVALID_EVENT_WAIT_LIST";
-	case -58: return "CL_INVALID_EVENT";
-	case -59: return "CL_INVALID_OPERATION";
-	case -60: return "CL_INVALID_GL_OBJECT";
-	case -61: return "CL_INVALID_BUFFER_SIZE";
-	case -62: return "CL_INVALID_MIP_LEVEL";
-	case -63: return "CL_INVALID_GLOBAL_WORK_SIZE";
-	case -64: return "CL_INVALID_PROPERTY";
-	case -65: return "CL_INVALID_IMAGE_DESCRIPTOR";
-	case -66: return "CL_INVALID_COMPILER_OPTIONS";
-	case -67: return "CL_INVALID_LINKER_OPTIONS";
-	case -68: return "CL_INVALID_DEVICE_PARTITION_COUNT";
-	// extension errors
-	case -1000: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
-	case -1001: return "CL_PLATFORM_NOT_FOUND_KHR";
-	case -1002: return "CL_INVALID_D3D10_DEVICE_KHR";
-	case -1003: return "CL_INVALID_D3D10_RESOURCE_KHR";
-	case -1004: return "CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR";
-	case -1005: return "CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR";
-	default: return "Unknown OpenCL error";
-}
+    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "naive_normalized_cross_correlation", &err);
+    //printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation
+    __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "remove_redness_from_coordinates", &err);
+    //printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates
+    __cu2cl_Kernel_histogram_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "histogram_kernel", &err);
+    //printf("__cu2cl_Kernel_histogram_kernel creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: histogram_kernel
+    __cu2cl_Kernel_exclusive_scan_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "exclusive_scan_kernel", &err);
+    //printf("__cu2cl_Kernel_exclusive_scan_kernel creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: exclusive_scan_kernel
+    __cu2cl_Kernel_move_kernel = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "move_kernel", &err);
+    //printf("__cu2cl_Kernel_move_kernel creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: move_kernel
 }
 
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 
-#include "utils.h-cl.h"
+// #include "utils.h"
 
 #include <iostream>
 #include <string>
@@ -145,8 +88,8 @@ switch(error){
 #include <vector>
 
 
-#include "loadSaveImage.h-cl.h"
-#include <stdio.h>
+// #include "loadSaveImage.h"
+
 
 
 
@@ -294,9 +237,12 @@ void radix_sort(cl_mem d_inputVals,
   const size_t histo_size = 2 * sizeof(unsigned int);
   const size_t arr_size   = numElems * sizeof(unsigned int);
 
-  *checkCudaError(cudaMalloc(&d_bins, histo_size));
-  *checkCudaError(cudaMalloc(&d_scanned, arr_size));
-  *checkCudaError(cudaMalloc(&d_moved, arr_size));
+  d_bins = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, histo_size, NULL, &err);
+//printf("clCreateBuffer for device variable d_bins is: %s\n", getErrorString(err));
+  d_scanned = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, arr_size, NULL, &err);
+//printf("clCreateBuffer for device variable d_scanned is: %s\n", getErrorString(err));
+  d_moved = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, arr_size, NULL, &err);
+//printf("clCreateBuffer for device variable d_moved is: %s\n", getErrorString(err));
 
 
   // for histogram kernel defined here
@@ -306,15 +252,19 @@ void radix_sort(cl_mem d_inputVals,
 
   for (unsigned int pass = 0; pass < 32; pass++) {
     unsigned int one = 1;
-    __cu2cl_Memset((cudaMemset(d_bins, 0, histo_size));
-    __cu2cl_Memset((cudaMemset(d_scanned, 0, arr_size));
-    __cu2cl_Memset((cudaMemset(d_outputVals, 0, arr_size));
-    __cu2cl_Memset((cudaMemset(d_outputPos, 0, arr_size));
+    __cu2cl_Memset(d_bins, 0, histo_size);
+    __cu2cl_Memset(d_scanned, 0, arr_size);
+    __cu2cl_Memset(d_outputVals, 0, arr_size);
+    __cu2cl_Memset(d_outputPos, 0, arr_size);
 
-    clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 0, sizeof(unsigned int), &pass);
-clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 1, sizeof(cl_mem), &d_bins);
-clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 2, sizeof(unsigned int *), &d_inputVals);
-clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 3, sizeof(int), &numElems);
+    err = clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 0, sizeof(unsigned int), &pass);
+//printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_histogram_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 1, sizeof(cl_mem), &d_bins);
+//printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_histogram_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 2, sizeof(unsigned int *), &d_inputVals);
+//printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_histogram_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 3, sizeof(int), &numElems);
+//printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_histogram_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 localWorkSize[0] = thread_dim[0];
 localWorkSize[1] = thread_dim[1];
 localWorkSize[2] = thread_dim[2];
@@ -322,7 +272,8 @@ globalWorkSize[0] = hist_block_dim[0]*localWorkSize[0];
 globalWorkSize[1] = hist_block_dim[1]*localWorkSize[1];
 globalWorkSize[2] = hist_block_dim[2]*localWorkSize[2];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_histogram_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-    clFinish(__cu2cl_CommandQueue);
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
     // checkCudaErrors(cudaGetLastError());
 
     clEnqueueReadBuffer(__cu2cl_CommandQueue, d_bins, CL_TRUE, 0, histo_size, &h_bins, 0, NULL, NULL);
@@ -330,30 +281,46 @@ clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_histogram_kernel, 3,
     // printf("debugging %d %d %d %d %d \n", h_bins[0], h_bins[1], h_bins[0] + h_bins[1], numElems, (one << pass));
 
     for (int i = 0; i < get_max_size(numElems, thread_dim[0]); i++) {
-      clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 0, sizeof(unsigned int), &pass);
-clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 1, sizeof(const unsigned int *), &d_inputVals);
-clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 2, sizeof(cl_mem), &d_scanned);
-clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 3, sizeof(int), &numElems);
-clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 4, sizeof(unsigned int), &i);
-clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 5, sizeof(unsigned int), &thread_dim[0]);
+      err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 0, sizeof(unsigned int), &pass);
+//printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 1, sizeof(const unsigned int *), &d_inputVals);
+//printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 2, sizeof(cl_mem), &d_scanned);
+//printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 3, sizeof(int), &numElems);
+//printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 4, sizeof(unsigned int), &i);
+//printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 5, sizeof(unsigned int), &thread_dim[0]);
+//printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_exclusive_scan_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 localWorkSize[0] = thread_dim[0];
 localWorkSize[1] = thread_dim[1];
 localWorkSize[2] = thread_dim[2];
 globalWorkSize[0] = ( = {1, 1, 1})*localWorkSize[0];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_exclusive_scan_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-      clFinish(__cu2cl_CommandQueue);
+      err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
       // checkCudaErrors(cudaGetLastError());
     }
     // calculate the move positions
-    clSetKernelArg(__cu2cl_Kernel_move_kernel, 0, sizeof(unsigned int), &pass);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 1, sizeof(unsigned int *), &d_inputVals);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 2, sizeof(unsigned int *), &d_inputPos);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 3, sizeof(unsigned int *), &d_outputVals);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 4, sizeof(unsigned int *), &d_outputPos);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 5, sizeof(cl_mem), &d_moved);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 6, sizeof(cl_mem), &d_scanned);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 7, sizeof(unsigned int), &h_bins[0]);
-clSetKernelArg(__cu2cl_Kernel_move_kernel, 8, sizeof(size_t), &numElems);
+    err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 0, sizeof(unsigned int), &pass);
+//printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 1, sizeof(unsigned int *), &d_inputVals);
+//printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 2, sizeof(unsigned int *), &d_inputPos);
+//printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 3, sizeof(unsigned int *), &d_outputVals);
+//printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 4, sizeof(unsigned int *), &d_outputPos);
+//printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 5, sizeof(cl_mem), &d_moved);
+//printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 6, sizeof(cl_mem), &d_scanned);
+//printf("clSetKernelArg for argument 6 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 7, sizeof(unsigned int), &h_bins[0]);
+//printf("clSetKernelArg for argument 7 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_move_kernel, 8, sizeof(size_t), &numElems);
+//printf("clSetKernelArg for argument 8 of kernel __cu2cl_Kernel_move_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 localWorkSize[0] = thread_dim[0];
 localWorkSize[1] = thread_dim[1];
 localWorkSize[2] = thread_dim[2];
@@ -361,16 +328,18 @@ globalWorkSize[0] = hist_block_dim[0]*localWorkSize[0];
 globalWorkSize[1] = hist_block_dim[1]*localWorkSize[1];
 globalWorkSize[2] = hist_block_dim[2]*localWorkSize[2];
 clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_move_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
-    clEnqueueCopyBu(cudaMemcpy(d_inputVals, d_outputVals, arr_size, cudaMemcpyDeviceToDevice));
-    clEnqueueCopyBu(cudaMemcpy(d_inputPos, d_outputPos, arr_size, cudaMemcpyDeviceToDevice));
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); 
+    // checkCudaErrors(cudaGetLastError());
+    clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputVals, d_inputVals, 0, 0, arr_size, 0, NULL, NULL);
+    clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputPos, d_inputPos, 0, 0, arr_size, 0, NULL, NULL);
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); 
+    // checkCudaErrors(cudaGetLastError());
   }
-  clReleaseMemObj(cudaFree(d_moved));
-  clReleaseMemObj(cudaFree(d_scanned));
-  clReleaseMemObj(cudaFree(d_bins));
+  clReleaseMemObject(d_moved);
+  clReleaseMemObject(d_scanned);
+  clReleaseMemObject(d_bins);
 }
 
 int main() {
@@ -418,10 +387,14 @@ cl_mem d_g;
 
     cl_mem d_op_r;
 
-    *(void**)&d_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_op_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_g = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
+    *(void**)&d_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_r is: %s\n", getErrorString(err));
+    *(void**)&d_op_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_op_r is: %s\n", getErrorString(err));
+    *(void**)&d_g = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_g is: %s\n", getErrorString(err));
+    *(void**)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_b is: %s\n", getErrorString(err));
     for (size_t i = 0; i < numRowsImg * numColsImg; ++i)
     {
         r[i] = (inImg[i].x);
@@ -448,9 +421,12 @@ cl_mem d_g;
 cl_mem d_bt;
 cl_mem d_gt;
 
-    *(void**)&d_rt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
-    *(void**)&d_gt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
-    *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
+    *(void**)&d_rt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_rt is: %s\n", getErrorString(err));
+    *(void**)&d_gt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_gt is: %s\n", getErrorString(err));
+    *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_bt is: %s\n", getErrorString(err));
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_rt, CL_TRUE, 0, sizeof(uchar) * templateSize, r, 0, NULL, NULL);
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_bt, CL_TRUE, 0, sizeof(uchar) * templateSize, b, 0, NULL, NULL);
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_gt, CL_TRUE, 0, sizeof(uchar) * templateSize, g, 0, NULL, NULL);
@@ -481,15 +457,18 @@ cl_mem d_gt;
 
 
     const size_t blockSize[3] = {32, 8, 1};
-    const size_t gridSize[3] = {(numColsImg + blockSize.x - 1) / blockSize.x, (numRowsImg + blockSize.y - 1) / blockSize.y, 1};
+    const size_t gridSize[3] = {(numColsImg + blockSize[0] - 1) / blockSize[0], (numRowsImg + blockSize[1] - 1) / blockSize[1], 1};
 
     //now compute the cross-correlations for each channel
     cl_mem red_data;
-    *(void**)&red_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&red_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&red_data is: %s\n", getErrorString(err));
     cl_mem blue_data;
-    *(void**)&blue_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&blue_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&blue_data is: %s\n", getErrorString(err));
     cl_mem green_data;
-    *(void**)&green_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&green_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&green_data is: %s\n", getErrorString(err));
 
     naive_normalized_cross_correlation <<<gridSize, blockSize >> > (red_data,
         d_r,
@@ -499,9 +478,9 @@ cl_mem d_gt;
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, r_mean);
 
-    clFinish(__cu2cl_CommandQueue);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
+    // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (blue_data,
         d_b,
@@ -510,8 +489,9 @@ cl_mem d_gt;
         templateHalfHeight, numRowsTemplate,
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, b_mean);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); 
+    // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (green_data,
         d_g,
@@ -521,18 +501,20 @@ cl_mem d_gt;
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, g_mean);
 
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
+     // checkCudaErrors(cudaGetLastError());
 
     float* h_red_data, * h_blue_data, * h_green_data;
     h_red_data = new float[numElems];
     h_green_data = new float[numElems];
     h_blue_data = new float[numElems];
-    clEnqueueReadBu(cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost));
+    clEnqueueReadBuffer(__cu2cl_CommandQueue, red_data, CL_TRUE, 0, sizeof(float) * numElems, h_red_data, 0, NULL, NULL);
     clEnqueueReadBuffer(__cu2cl_CommandQueue, blue_data, CL_TRUE, 0, sizeof(float) * numElems, h_blue_data, 0, NULL, NULL);
     clEnqueueReadBuffer(__cu2cl_CommandQueue, green_data, CL_TRUE, 0, sizeof(float) * numElems, h_green_data, 0, NULL, NULL);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); 
+    // checkCudaErrors(cudaGetLastError());
     float* combined = new float[numElems];
     float mini = 0;
 
@@ -570,11 +552,13 @@ cl_mem d_gt;
     }
 
     cl_mem d_inputVals;
-    *(void**)&d_inputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int)* numElems, NULL, NULL);
+    *(void**)&d_inputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int)* numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_inputVals is: %s\n", getErrorString(err));
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_inputVals, CL_TRUE, 0, sizeof(unsigned int)* numElems, inputVals, 0, NULL, NULL);
 
     cl_mem d_inputPos;
-    *(void **)&d_inputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int)*numElems, NULL, NULL);
+    *(void **)&d_inputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int)*numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void **)&d_inputPos is: %s\n", getErrorString(err));
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_inputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, inputPos, 0, NULL, NULL);
 
     outputVals = new unsigned int[numElems];
@@ -582,8 +566,10 @@ cl_mem d_gt;
 
     cl_mem d_outputPos;
 cl_mem d_outputVals;
-    *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
-    *(void**)&d_outputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
+    *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_outputPos is: %s\n", getErrorString(err));
+    *(void**)&d_outputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_outputVals is: %s\n", getErrorString(err));
     // printf("before radix");
 
     radix_sort(d_inputVals,d_inputPos,d_outputVals,d_outputPos,numElems);
@@ -591,7 +577,7 @@ cl_mem d_outputVals;
     // printf("after radix");
 
     const size_t block2Size[3] = {256, 1, 1};
-    const size_t grid2Size[3] = {(40 + blockSize.x - 1) / blockSize.x, 1, 1};
+    const size_t grid2Size[3] = {(40 + blockSize[0] - 1) / blockSize[0], 1, 1};
     /*for (int i = 0;i < 20;i++)
     {
         printf("i:%d and outputPos: %d\n",i,outputPos[i]);
@@ -601,24 +587,39 @@ cl_mem d_outputVals;
 /*CU2CL Note -- Inserted temporary variable for kernel literal argument 5!*/
 /*CU2CL Note -- Inserted temporary variable for kernel literal argument 8!*/
 /*CU2CL Note -- Inserted temporary variable for kernel literal argument 9!*/
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 0, sizeof(cl_mem), &d_outputPos);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 1, sizeof(cl_mem), &d_r);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 2, sizeof(cl_mem), &d_b);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 3, sizeof(cl_mem), &d_g);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 4, sizeof(cl_mem), &d_op_r);
+    err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 0, sizeof(cl_mem), &d_outputPos);
+//printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 1, sizeof(cl_mem), &d_r);
+//printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 2, sizeof(cl_mem), &d_b);
+//printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 3, sizeof(cl_mem), &d_g);
+//printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 4, sizeof(cl_mem), &d_op_r);
+//printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_5 = 40;
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 5, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_5);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 6, sizeof(int), &numRowsImg);
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 7, sizeof(int), &numColsImg);
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 5, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_5);
+//printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 6, sizeof(int), &numRowsImg);
+//printf("clSetKernelArg for argument 6 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 7, sizeof(int), &numColsImg);
+//printf("clSetKernelArg for argument 7 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_8 = 9;
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 8, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_8);
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 8, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_8);
+//printf("clSetKernelArg for argument 8 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
 int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_9 = 9;
-clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 9, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_9);
-localWorkSize[0] = block2Size;
-globalWorkSize[0] = (grid2Size)*localWorkSize[0];
-clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_remove_redness_from_coordinates, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
-    clFinish(__cu2cl_CommandQueue); checkCudaErrors(cudaGetLastError());
+err = clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 9, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_9);
+//printf("clSetKernelArg for argument 9 of kernel __cu2cl_Kernel_remove_redness_from_coordinates is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg
+localWorkSize[0] = block2Size[0];
+localWorkSize[1] = block2Size[1];
+localWorkSize[2] = block2Size[2];
+globalWorkSize[0] = grid2Size[0]*localWorkSize[0];
+globalWorkSize[1] = grid2Size[1]*localWorkSize[1];
+globalWorkSize[2] = grid2Size[2]*localWorkSize[2];
+clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_remove_redness_from_coordinates, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); 
+    // checkCudaErrors(cudaGetLastError());
 
     uchar* h_op_r = new uchar[numElems];
     clEnqueueReadBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, h_op_r, 0, NULL, NULL);

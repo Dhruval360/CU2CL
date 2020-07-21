@@ -1,4 +1,3 @@
-
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
 #else
@@ -13,10 +12,13 @@
 
 cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
 cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
-cl_kernel __cu2cl_Kernel_histogram_kernel;
-cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
-cl_kernel __cu2cl_Kernel_move_kernel;
-cl_program __cu2cl_Program_redEye_cu;
+cl_program __cu2cl_Program_redEYECPU_cu;
+extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
+extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
+extern cl_kernel __cu2cl_Kernel_histogram_kernel;
+extern cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
+extern cl_kernel __cu2cl_Kernel_move_kernel;
+extern cl_program __cu2cl_Program_redEyeGPU_cu;
 extern const char *progSrc;
 extern size_t progLen;
 
@@ -29,111 +31,45 @@ extern cl_command_queue __cu2cl_CommandQueue;
 
 extern size_t globalWorkSize[3];
 extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_redEye_cu() {
+void __cu2cl_Cleanup_redEYECPU_cu() {
     clReleaseKernel(__cu2cl_Kernel_naive_normalized_cross_correlation);
     clReleaseKernel(__cu2cl_Kernel_remove_redness_from_coordinates);
-    clReleaseKernel(__cu2cl_Kernel_histogram_kernel);
-    clReleaseKernel(__cu2cl_Kernel_exclusive_scan_kernel);
-    clReleaseKernel(__cu2cl_Kernel_move_kernel);
-    clReleaseProgram(__cu2cl_Program_redEye_cu);
+    clReleaseProgram(__cu2cl_Program_redEYECPU_cu);
 }
-void __cu2cl_Init_redEye_cu() {
-#ifdef WITH_ALTERA
-    progLen = __cu2cl_LoadProgramSource("redEye_cu_cl.aocx", &progSrc);
-    __cu2cl_Program_redEye_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, NULL);
-#else
-    progLen = __cu2cl_LoadProgramSource("redEye.cu-cl.cl", &progSrc);
-    __cu2cl_Program_redEye_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, NULL);
-#endif
+void __cu2cl_Init_redEYECPU_cu() {
+    #ifdef WITH_ALTERA
+    progLen = __cu2cl_LoadProgramSource("redEYECPU_cu_cl.aocx", &progSrc);
+    __cu2cl_Program_redEYECPU_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    #else
+    progLen = __cu2cl_LoadProgramSource("redEYECPU.cu-cl.cl", &progSrc);
+    __cu2cl_Program_redEYECPU_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
+    //printf("clCreateProgramWithSource for redEYECPU.cu-cl.cl: %s\n", getErrorString(err));
+    #endif
     free((void *) progSrc);
-    clBuildProgram(__cu2cl_Program_redEye_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
-    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEye_cu, "naive_normalized_cross_correlation", NULL);
-    __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEye_cu, "remove_redness_from_coordinates", NULL);
-    __cu2cl_Kernel_histogram_kernel = clCreateKernel(__cu2cl_Program_redEye_cu, "histogram_kernel", NULL);
-    __cu2cl_Kernel_exclusive_scan_kernel = clCreateKernel(__cu2cl_Program_redEye_cu, "exclusive_scan_kernel", NULL);
-    __cu2cl_Kernel_move_kernel = clCreateKernel(__cu2cl_Program_redEye_cu, "move_kernel", NULL);
-}
-
-cl_int err;
-const char *getErrorString(cl_int error) {
-    switch (error) {
-// run-time and JIT compiler errors
-    case 0: return "CL_SUCCESS";
-    case -1: return "CL_DEVICE_NOT_FOUND";
-    case -2: return "CL_DEVICE_NOT_AVAILABLE";
-    case -3: return "CL_COMPILER_NOT_AVAILABLE";
-    case -4: return "CL_MEM_OBJECT_ALLOCATION_FAILURE";
-    case -5: return "CL_OUT_OF_RESOURCES";
-    case -6: return "CL_OUT_OF_HOST_MEMORY";
-    case -7: return "CL_PROFILING_INFO_NOT_AVAILABLE";
-    case -8: return "CL_MEM_COPY_OVERLAP";
-    case -9: return "CL_IMAGE_FORMAT_MISMATCH";
-    case -10: return "CL_IMAGE_FORMAT_NOT_SUPPORTED";
-    case -11: return "CL_BUILD_PROGRAM_FAILURE";
-    case -12: return "CL_MAP_FAILURE";
-    case -13: return "CL_MISALIGNED_SUB_BUFFER_OFFSET";
-    case -14: return "CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST";
-    case -15: return "CL_COMPILE_PROGRAM_FAILURE";
-    case -16: return "CL_LINKER_NOT_AVAILABLE";
-    case -17: return "CL_LINK_PROGRAM_FAILURE";
-    case -18: return "CL_DEVICE_PARTITION_FAILED";
-    case -19: return "CL_KERNEL_ARG_INFO_NOT_AVAILABLE";
-    // compile-time errors
-    case -30: return "CL_INVALID_VALUE";
-    case -31: return "CL_INVALID_DEVICE_TYPE";
-    case -32: return "CL_INVALID_PLATFORM";
-    case -33: return "CL_INVALID_DEVICE";
-    case -34: return "CL_INVALID_CONTEXT";
-    case -35: return "CL_INVALID_QUEUE_PROPERTIES";
-    case -36: return "CL_INVALID_COMMAND_QUEUE";
-    case -37: return "CL_INVALID_HOST_PTR";
-    case -38: return "CL_INVALID_MEM_OBJECT";
-    case -39: return "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR";
-    case -40: return "CL_INVALID_IMAGE_SIZE";
-    case -41: return "CL_INVALID_SAMPLER";
-    case -42: return "CL_INVALID_BINARY";
-    case -43: return "CL_INVALID_BUILD_OPTIONS";
-    case -44: return "CL_INVALID_PROGRAM";
-    case -45: return "CL_INVALID_PROGRAM_EXECUTABLE";
-    case -46: return "CL_INVALID_KERNEL_NAME";
-    case -47: return "CL_INVALID_KERNEL_DEFINITION";
-    case -48: return "CL_INVALID_KERNEL";
-    case -49: return "CL_INVALID_ARG_INDEX";
-    case -50: return "CL_INVALID_ARG_VALUE";
-    case -51: return "CL_INVALID_ARG_SIZE";
-    case -52: return "CL_INVALID_KERNEL_ARGS";
-    case -53: return "CL_INVALID_WORK_DIMENSION";
-    case -54: return "CL_INVALID_WORK_GROUP_SIZE";
-    case -55: return "CL_INVALID_WORK_ITEM_SIZE";
-    case -56: return "CL_INVALID_GLOBAL_OFFSET";
-    case -57: return "CL_INVALID_EVENT_WAIT_LIST";
-    case -58: return "CL_INVALID_EVENT";
-    case -59: return "CL_INVALID_OPERATION";
-    case -60: return "CL_INVALID_GL_OBJECT";
-    case -61: return "CL_INVALID_BUFFER_SIZE";
-    case -62: return "CL_INVALID_MIP_LEVEL";
-    case -63: return "CL_INVALID_GLOBAL_WORK_SIZE";
-    case -64: return "CL_INVALID_PROPERTY";
-    case -65: return "CL_INVALID_IMAGE_DESCRIPTOR";
-    case -66: return "CL_INVALID_COMPILER_OPTIONS";
-    case -67: return "CL_INVALID_LINKER_OPTIONS";
-    case -68: return "CL_INVALID_DEVICE_PARTITION_COUNT";
-    // extension errors
-    case -1000: return "CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR";
-    case -1001: return "CL_PLATFORM_NOT_FOUND_KHR";
-    case -1002: return "CL_INVALID_D3D10_DEVICE_KHR";
-    case -1003: return "CL_INVALID_D3D10_RESOURCE_KHR";
-    case -1004: return "CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR";
-    case -1005: return "CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR";
-    default: return "Unknown OpenCL error";
+    err = clBuildProgram(__cu2cl_Program_redEYECPU_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
+    //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
+    if(err != CL_SUCCESS){
+        std::vector<char> buildLog;
+        size_t logSize;
+        err = clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, &__cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, nullptr, &logSize);
+        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
+        buildLog.resize(logSize)
+;        clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], nullptr);
+        std::cout << &buildLog[0] << '
+';
     }
+
+    __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "naive_normalized_cross_correlation", &err);
+    //printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation
+    __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "remove_redness_from_coordinates", &err);
+    //printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates
 }
 
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
 
-// #include "utils.h-cl.h"
+#include "utils.h-cl.h"
 
 #include <iostream>
 #include <string>
@@ -142,7 +78,14 @@ const char *getErrorString(cl_int error) {
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+
 #include <stdio.h>
+
+
+
+
+
+
 
 
 
@@ -157,8 +100,8 @@ static cl_uchar4* eyeTemplate;
 
 
 void loadImageHDR(const std::string& filename,
-                  float** imagePtr,
-                  size_t* numRows, size_t* numCols)
+    float** imagePtr,
+    size_t* numRows, size_t* numCols)
 {
     cv::Mat image = cv::imread(filename.c_str(), cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
     if (image.empty()) {
@@ -187,8 +130,8 @@ void loadImageHDR(const std::string& filename,
 }
 
 void loadImageRGBA(const std::string& filename,
-                   uchar4** imagePtr,
-                   size_t* numRows, size_t* numCols)
+    uchar4** imagePtr,
+    size_t* numRows, size_t* numCols)
 {
     cv::Mat image = cv::imread(filename);
     if (image.empty()) {
@@ -224,8 +167,8 @@ void loadImageRGBA(const std::string& filename,
 }
 
 void saveImageRGBA(const uchar4* const image,
-                   const size_t numRows, const size_t numCols,
-                   const std::string& output_file)
+    const size_t numRows, const size_t numCols,
+    const std::string& output_file)
 {
     int sizes[2];
     sizes[0] = numRows;
@@ -240,8 +183,8 @@ void saveImageRGBA(const uchar4* const image,
 //output an exr file
 //assumed to already be BGR
 void saveImageHDR(const float* const image,
-                  const size_t numRows, const size_t numCols,
-                  const std::string& output_file)
+    const size_t numRows, const size_t numCols,
+    const std::string& output_file)
 {
     int sizes[2];
     sizes[0] = numRows;
@@ -254,115 +197,65 @@ void saveImageHDR(const float* const image,
     cv::imwrite(output_file.c_str(), imageHDR);
 }
 
-
-
-
-// we will run 1 exclusive scan, but then when we
-// do the move, for zero vals, we iwll take mid - val of scan there
-
-
-
-
-// max size for n/d better one
-int get_max_size(int n, int d) {
-    return (int)ceil( (float)n / (float)d ) + 1;
-}
-
-
-// host function for radix sort
-void radix_sort(cl_mem d_inputVals,
-                cl_mem d_inputPos,
-                cl_mem d_outputVals,
-                cl_mem d_outputPos,
-                const size_t numElems)
+void CPU_radix(unsigned int* inputVals,
+    unsigned int* inputPos,
+    unsigned int* outputVals,
+    unsigned int* outputPos,
+    const size_t numElems)
 {
-    cl_mem d_bins;
-    unsigned int  h_bins[2];
-    cl_mem d_scanned;
-    cl_mem d_moved;
-    const size_t histo_size = 2 * sizeof(unsigned int);
-    const size_t arr_size   = numElems * sizeof(unsigned int);
+    const int numBits = 1;
+    const int numBins = 1 << numBits;
 
-    *&d_bins = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, histo_size, NULL, NULL);
-    *&d_scanned = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, arr_size, NULL, NULL);
-    *&d_moved = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, arr_size, NULL, NULL);
+    unsigned int* binHistogram = new unsigned int[numBins];
+    unsigned int* binScan = new unsigned int[numBins];
 
-    // for histogram kernel defined here
-    size_t thread_dim[3] = {1024, 1, 1};
-    size_t hist_block_dim[3] = {get_max_size(numElems, thread_dim[0]), 1, 1};
+    unsigned int* vals_src = inputVals;
+    unsigned int* pos_src = inputPos;
 
+    unsigned int* vals_dst = outputVals;
+    unsigned int* pos_dst = outputPos;
 
-    for (unsigned int pass = 0; pass < 32; pass++) {
-        unsigned int one = 1;
-        __cu2cl_Memset(d_bins, 0, histo_size);
-        __cu2cl_Memset(d_scanned, 0, arr_size);
-        __cu2cl_Memset(d_outputVals, 0, arr_size);
-        __cu2cl_Memset(d_outputPos, 0, arr_size);
+    for (unsigned int i = 0; i < 8 * sizeof(unsigned int); i += numBits) {
+        unsigned int mask = (numBins - 1) << i;
 
-        clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 0, sizeof(unsigned int), &pass);
-        clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 1, sizeof(cl_mem), &d_bins);
-        clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 2, sizeof(unsigned int *), &d_inputVals);
-        clSetKernelArg(__cu2cl_Kernel_histogram_kernel, 3, sizeof(int), &numElems);
-        localWorkSize[0] = thread_dim[0];
-        localWorkSize[1] = thread_dim[1];
-        localWorkSize[2] = thread_dim[2];
-        globalWorkSize[0] = hist_block_dim[0] * localWorkSize[0];
-        globalWorkSize[1] = hist_block_dim[1] * localWorkSize[1];
-        globalWorkSize[2] = hist_block_dim[2] * localWorkSize[2];
-        clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_histogram_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-        clFinish(__cu2cl_CommandQueue);
-        // checkCudaErrors(cudaGetLastError());
+        memset(binHistogram, 0, sizeof(unsigned int) * numBins);
+        memset(binScan, 0, sizeof(unsigned int) * numBins);
 
-        clEnqueueReadBuffer(__cu2cl_CommandQueue, d_bins, CL_TRUE, 0, histo_size, &h_bins, 0, NULL, NULL);
-
-        // printf("debugging %d %d %d %d %d \n", h_bins[0], h_bins[1], h_bins[0] + h_bins[1], numElems, (one << pass));
-
-        for (int i = 0; i < get_max_size(numElems, thread_dim[0]); i++) {
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 0, sizeof(unsigned int), &pass);
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 1, sizeof(const unsigned int *), &d_inputVals);
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 2, sizeof(cl_mem), &d_scanned);
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 3, sizeof(int), &numElems);
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 4, sizeof(unsigned int), &i);
-            clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 5, sizeof(unsigned int), &thread_dim[0]);
-            localWorkSize[0] = thread_dim[0];
-            localWorkSize[1] = thread_dim[1];
-            localWorkSize[2] = thread_dim[2];
-            globalWorkSize[0] = ( = {1, 1, 1})*localWorkSize[0];
-            clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_exclusive_scan_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-            clFinish(__cu2cl_CommandQueue);
-            // checkCudaErrors(cudaGetLastError());
+        //perform histogram of data & mask into bins
+        for (unsigned int j = 0; j < numElems; ++j) {
+            // printf("%d ",vals_src[j]);
+            unsigned int bin = (vals_src[j] & mask) >> i;
+            binHistogram[bin]++;
         }
-        // calculate the move positions
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 0, sizeof(unsigned int), &pass);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 1, sizeof(unsigned int *), &d_inputVals);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 2, sizeof(unsigned int *), &d_inputPos);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 3, sizeof(unsigned int *), &d_outputVals);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 4, sizeof(unsigned int *), &d_outputPos);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 5, sizeof(cl_mem), &d_moved);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 6, sizeof(cl_mem), &d_scanned);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 7, sizeof(unsigned int), &h_bins[0]);
-        clSetKernelArg(__cu2cl_Kernel_move_kernel, 8, sizeof(size_t), &numElems);
-        localWorkSize[0] = thread_dim[0];
-        localWorkSize[1] = thread_dim[1];
-        localWorkSize[2] = thread_dim[2];
-        globalWorkSize[0] = hist_block_dim[0] * localWorkSize[0];
-        globalWorkSize[1] = hist_block_dim[1] * localWorkSize[1];
-        globalWorkSize[2] = hist_block_dim[2] * localWorkSize[2];
-        clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_move_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-        clFinish(__cu2cl_CommandQueue);
-        // checkCudaErrors(cudaGetLastError());
-        clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputVals, d_inputVals, 0, 0, arr_size, 0, NULL, NULL);
-        clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputPos, d_inputPos, 0, 0, arr_size, 0, NULL, NULL);
-        clFinish(__cu2cl_CommandQueue);
-        // checkCudaErrors(cudaGetLastError());
+
+        //perform exclusive prefix sum (scan) on binHistogram to get starting
+        //location for each bin
+        for (unsigned int j = 1; j < numBins; ++j) {
+            binScan[j] = binScan[j - 1] + binHistogram[j - 1];
+        }
+
+        //Gather everything into the correct location
+        //need to move vals and positions
+        for (unsigned int j = 0; j < numElems; ++j) {
+            unsigned int bin = (vals_src[j] & mask) >> i;
+            vals_dst[binScan[bin]] = vals_src[j];
+            pos_dst[binScan[bin]] = pos_src[j];
+            binScan[bin]++;
+        }
+
+        std::swap(vals_dst, vals_src);
+        std::swap(pos_dst, pos_src);
     }
-    clReleaseMemObject(d_moved);
-    clReleaseMemObject(d_scanned);
-    clReleaseMemObject(d_bins);
+
+    std::copy(inputVals, inputVals + numElems, outputVals);
+    std::copy(inputPos, inputPos + numElems, outputPos);
+
+    delete[] binHistogram;
+    delete[] binScan;
 }
 
 int main() {
-    __cu2cl_Init();
+__cu2cl_Init();
 
     unsigned int* inputVals;
     unsigned int* inputPos;
@@ -377,9 +270,11 @@ int main() {
     std::string output_file = "fromGPU.jpg";
     std::string reference_file = "fromCPU.jpg";
 
+
     // thrust::device_vector<unsigned char> d_red;
     // thrust::device_vector<unsigned char> d_blue;
     // thrust::device_vector<unsigned char> d_green;
+
 
 
     size_t numRowsTemplate, numColsTemplate, numRowsImg, nowColsImg;
@@ -391,25 +286,29 @@ int main() {
     templateHalfHeight = (numRowsTemplate - 1) / 2;
 
     //we need to split each image into its separate channels
+    //use thrust to demonstrate basic uses
+
     numElems = numRowsImg * numColsImg;
     size_t templateSize = numRowsTemplate * numColsTemplate;
-
-
 
     uchar* r = new uchar[numElems];
     uchar* g = new uchar[numElems];
     uchar* b = new uchar[numElems];
 
     cl_mem d_r;
-    cl_mem d_b;
-    cl_mem d_g;
+cl_mem d_b;
+cl_mem d_g;
 
     cl_mem d_op_r;
 
-    *(void**)&d_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_op_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_g = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
-    *(void**)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, NULL);
+    *(void**)&d_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_r is: %s\n", getErrorString(err));
+    *(void**)&d_op_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_op_r is: %s\n", getErrorString(err));
+    *(void**)&d_g = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_g is: %s\n", getErrorString(err));
+    *(void**)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_b is: %s\n", getErrorString(err));
     for (size_t i = 0; i < numRowsImg * numColsImg; ++i)
     {
         r[i] = (inImg[i].x);
@@ -433,27 +332,30 @@ int main() {
         bt[i] = (eyeTemplate[i].z);
     }
     cl_mem d_rt;
-    cl_mem d_bt;
-    cl_mem d_gt;
+cl_mem d_bt;
+cl_mem d_gt;
 
-    *(void**)&d_rt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
-    *(void**)&d_gt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
-    *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, NULL);
+    *(void**)&d_rt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_rt is: %s\n", getErrorString(err));
+    *(void**)&d_gt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_gt is: %s\n", getErrorString(err));
+    *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_bt is: %s\n", getErrorString(err));
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_rt, CL_TRUE, 0, sizeof(uchar) * templateSize, r, 0, NULL, NULL);
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_bt, CL_TRUE, 0, sizeof(uchar) * templateSize, b, 0, NULL, NULL);
     clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_gt, CL_TRUE, 0, sizeof(uchar) * templateSize, g, 0, NULL, NULL);
 
     unsigned int r_sum, b_sum, g_sum;
-    r_sum = 0; b_sum = 0; g_sum = 0;
-    for (int i = 0; i < numElems; i++)
+    r_sum = 0;b_sum = 0;g_sum = 0;
+    for (int i = 0;i < numElems;i++)
     {
         r_sum += r[i];
         b_sum += b[i];
         g_sum += g[i];
     }
     unsigned int rt_sum, bt_sum, gt_sum;
-    rt_sum = 0; bt_sum = 0; gt_sum = 0;
-    for (int i = 0; i < templateSize; i++)
+    rt_sum = 0;bt_sum = 0;gt_sum = 0;
+    for (int i = 0;i < templateSize;i++)
     {
         rt_sum += rt[i];
         bt_sum += bt[i];
@@ -464,112 +366,94 @@ int main() {
     float b_mean = (double)bt_sum / templateSize;
     float g_mean = (double)gt_sum / templateSize;
 
-    //printf("this is rmean\n", r_mean);
+   // printf("this is rmean\n", r_mean);
     //printf("It came through\n");
 
 
     const size_t blockSize[3] = {32, 8, 1};
-    const size_t gridSize[3] = {(numColsImg + blockSize.x - 1) / blockSize.x, (numRowsImg + blockSize.y - 1) / blockSize.y, 1};
+    const size_t gridSize[3] = {(numColsImg + blockSize[0] - 1) / blockSize[0], (numRowsImg + blockSize[1] - 1) / blockSize[1], 1};
 
     //now compute the cross-correlations for each channel
     cl_mem red_data;
-    *(void**)&red_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&red_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&red_data is: %s\n", getErrorString(err));
     cl_mem blue_data;
-    *(void**)&blue_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&blue_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&blue_data is: %s\n", getErrorString(err));
     cl_mem green_data;
-    *(void**)&green_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, NULL);
+    *(void**)&green_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&green_data is: %s\n", getErrorString(err));
 
-    /*CU2CL Note -- Fast-tracked dim3 type without cast*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 9!*/
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 0, sizeof(cl_mem), &red_data);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 1, sizeof(cl_mem), &d_r);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 2, sizeof(cl_mem), &d_rt);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 3, sizeof(int), &numRowsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 4, sizeof(int), &numColsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 5, sizeof(int), &templateHalfHeight);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 6, sizeof(int), &numRowsTemplate);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 7, sizeof(int), &templateHalfWidth);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 8, sizeof(int), &numColsTemplate);
-    int __cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9 = numRowsTemplate * numColsTemplate;
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 9, sizeof(int), &__cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 10, sizeof(float), &r_mean);
-    localWorkSize[0] = blockSize;
-    globalWorkSize[0] = (gridSize) * localWorkSize[0];
-    clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_naive_normalized_cross_correlation, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    naive_normalized_cross_correlation << <gridSize, blockSize >> > (red_data,
+        d_r,
+        d_rt,
+        numRowsImg, numColsImg,
+        templateHalfHeight, numRowsTemplate,
+        templateHalfWidth, numColsTemplate,
+        numRowsTemplate * numColsTemplate, r_mean);
 
-    clFinish(__cu2cl_CommandQueue);
-    // checkCudaErrors(cudaGetLastError());
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err));
+/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
+    checkCudaErrors(cudaGetLastError());
+    // printf("I am still okay\n");
 
-    /*CU2CL Note -- Fast-tracked dim3 type without cast*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 9!*/
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 0, sizeof(cl_mem), &blue_data);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 1, sizeof(cl_mem), &d_b);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 2, sizeof(cl_mem), &d_bt);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 3, sizeof(int), &numRowsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 4, sizeof(int), &numColsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 5, sizeof(int), &templateHalfHeight);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 6, sizeof(int), &numRowsTemplate);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 7, sizeof(int), &templateHalfWidth);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 8, sizeof(int), &numColsTemplate);
-    int __cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9 = numRowsTemplate * numColsTemplate;
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 9, sizeof(int), &__cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 10, sizeof(float), &b_mean);
-    localWorkSize[0] = blockSize;
-    globalWorkSize[0] = (gridSize) * localWorkSize[0];
-    clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_naive_normalized_cross_correlation, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-    clFinish(__cu2cl_CommandQueue);
-    // checkCudaErrors(cudaGetLastError());
+    naive_normalized_cross_correlation << <gridSize, blockSize >> > (blue_data,
+        d_b,
+        d_bt,
+        numRowsImg, numColsImg,
+        templateHalfHeight, numRowsTemplate,
+        templateHalfWidth, numColsTemplate,
+        numRowsTemplate * numColsTemplate, b_mean);
+/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
 
-    /*CU2CL Note -- Fast-tracked dim3 type without cast*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 9!*/
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 0, sizeof(cl_mem), &green_data);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 1, sizeof(cl_mem), &d_g);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 2, sizeof(cl_mem), &d_gt);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 3, sizeof(int), &numRowsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 4, sizeof(int), &numColsImg);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 5, sizeof(int), &templateHalfHeight);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 6, sizeof(int), &numRowsTemplate);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 7, sizeof(int), &templateHalfWidth);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 8, sizeof(int), &numColsTemplate);
-    int __cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9 = numRowsTemplate * numColsTemplate;
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 9, sizeof(int), &__cu2cl_Kernel_naive_normalized_cross_correlation_temp_arg_9);
-    clSetKernelArg(__cu2cl_Kernel_naive_normalized_cross_correlation, 10, sizeof(float), &g_mean);
-    localWorkSize[0] = blockSize;
-    globalWorkSize[0] = (gridSize) * localWorkSize[0];
-    clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_naive_normalized_cross_correlation, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
+    naive_normalized_cross_correlation << <gridSize, blockSize >> > (green_data,
+        d_g,
+        d_gt,
+        numRowsImg, numColsImg,
+        templateHalfHeight, numRowsTemplate,
+        templateHalfWidth, numColsTemplate,
+        numRowsTemplate * numColsTemplate, g_mean);
 
-    clFinish(__cu2cl_CommandQueue);
-    // checkCudaErrors(cudaGetLastError());
+/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
 
     float* h_red_data, * h_blue_data, * h_green_data;
     h_red_data = new float[numElems];
     h_green_data = new float[numElems];
     h_blue_data = new float[numElems];
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, red_data, CL_TRUE, 0, sizeof(float) * numElems, h_red_data, 0, NULL, NULL);
+    clEnqueueReadBu(cudaMemcpy(h_red_data, red_data, sizeof(float) * numElems, cudaMemcpyDeviceToHost));
     clEnqueueReadBuffer(__cu2cl_CommandQueue, blue_data, CL_TRUE, 0, sizeof(float) * numElems, h_blue_data, 0, NULL, NULL);
     clEnqueueReadBuffer(__cu2cl_CommandQueue, green_data, CL_TRUE, 0, sizeof(float) * numElems, h_green_data, 0, NULL, NULL);
-    clFinish(__cu2cl_CommandQueue);
+/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
     float* combined = new float[numElems];
     float mini = 0;
 
 
 
 
-    for (int i = 0; i < numElems; i++)
+    for (int i = 0;i < numElems;i++)
     {
+        //printf("%f is hred_data",h_red_data[i]);
         combined[i] = h_red_data[i] * h_blue_data[i] * h_green_data[i];
         if (mini > combined[i])
         {
             mini = combined[i];
             //printf("%f is mini", mini);
         }
+        // printf("sam\t");
     }
     printf("%f is mini", mini);
-    // find min and add bias so NO VALUE is negetive, easier to deal with
+    // find min and add bias
 
 
     inputVals = new unsigned int[numElems];
-    for (int i = 0; i < numElems; i++)
+    for (int i = 0;i < numElems;i++)
     {
         //printf("combined val: %d \t", combined[i]);
         combined[i] = (double)combined[i] + (double)(-1 * mini);
@@ -579,62 +463,39 @@ int main() {
 
 
     inputPos = new unsigned int[numElems];
+    //inputVals = (unsigned int*)thrust::raw_pointer_cast(d_combined_response.data());
 
-    for (int i = 0; i < numElems; i++)
+    for (int i = 0;i < numElems;i++)
     {
         inputPos[i] = i;
     }
 
-    cl_mem d_inputVals;
-    *(void**)&d_inputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_inputVals, CL_TRUE, 0, sizeof(unsigned int)* numElems, inputVals, 0, NULL, NULL);
-
-    cl_mem d_inputPos;
-    *(void **)&d_inputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
-    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_inputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, inputPos, 0, NULL, NULL);
-
     outputVals = new unsigned int[numElems];
     outputPos = new unsigned int[numElems];
-
-    cl_mem d_outputPos;
-    cl_mem d_outputVals;
-    *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
-    *(void**)&d_outputVals = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, NULL);
     // printf("before radix");
-
-    radix_sort(d_inputVals, d_inputPos, d_outputVals, d_outputPos, numElems);
-
+    CPU_radix(inputVals, inputPos, outputVals, outputPos, numElems);
     // printf("after radix");
 
     const size_t block2Size[3] = {256, 1, 1};
-    const size_t grid2Size[3] = {(40 + blockSize.x - 1) / blockSize.x, 1, 1};
-    /*for (int i = 0;i < 20;i++)
-    {
-        printf("i:%d and outputPos: %d\n",i,outputPos[i]);
-    }*/
+    const size_t grid2Size[3] = {(40 + blockSize[0] - 1) / blockSize[0], 1, 1};
 
-    /*CU2CL Note -- Fast-tracked dim3 type without cast*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 5!*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 8!*/
-    /*CU2CL Note -- Inserted temporary variable for kernel literal argument 9!*/
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 0, sizeof(cl_mem), &d_outputPos);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 1, sizeof(cl_mem), &d_r);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 2, sizeof(cl_mem), &d_b);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 3, sizeof(cl_mem), &d_g);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 4, sizeof(cl_mem), &d_op_r);
-    int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_5 = 40;
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 5, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_5);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 6, sizeof(int), &numRowsImg);
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 7, sizeof(int), &numColsImg);
-    int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_8 = 9;
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 8, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_8);
-    int __cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_9 = 9;
-    clSetKernelArg(__cu2cl_Kernel_remove_redness_from_coordinates, 9, sizeof(int), &__cu2cl_Kernel_remove_redness_from_coordinates_temp_arg_9);
-    localWorkSize[0] = block2Size;
-    globalWorkSize[0] = (grid2Size) * localWorkSize[0];
-    clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_remove_redness_from_coordinates, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
-    clFinish(__cu2cl_CommandQueue);
-    // checkCudaErrors(cudaGetLastError());
+    cl_mem d_outputPos;
+    *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, &err);
+//printf("clCreateBuffer for device variable *(void**)&d_outputPos is: %s\n", getErrorString(err));
+    clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_outputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, outputPos, 0, NULL, NULL);
+
+    remove_redness_from_coordinates << <grid2Size, block2Size >> > (d_outputPos,
+        d_r,
+        d_b,
+        d_g,
+        d_op_r,
+        40,
+        numRowsImg, numColsImg,
+        9, 9);
+/*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
+    err = clFinish(__cu2cl_CommandQueue);
+//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
+
 
     uchar* h_op_r = new uchar[numElems];
     clEnqueueReadBuffer(__cu2cl_CommandQueue, d_op_r, CL_TRUE, 0, sizeof(uchar) * numElems, h_op_r, 0, NULL, NULL);
@@ -642,7 +503,7 @@ int main() {
 
     // combine channels
     cl_uchar4* outputImg = new uchar4[numElems];
-    for (int i = 0; i < numElems; i++)
+    for (int i = 0;i < numElems;i++)
     {
         outputImg[i].x = h_op_r[i];
         outputImg[i].y = g[i];
@@ -651,8 +512,8 @@ int main() {
     }
 
 
-    saveImageRGBA(outputImg, numRowsImg, numColsImg, output_file);
+    saveImageRGBA(outputImg, numRowsImg, numColsImg, reference_file);
 
     return 0;
-    __cu2cl_Cleanup();
+__cu2cl_Cleanup();
 }

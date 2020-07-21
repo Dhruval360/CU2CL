@@ -1,5 +1,17 @@
+
+
+
+
 #include "utils.h-cl.cl"
-#include "loadSaveImage.h-cl.cl"
+
+
+
+
+
+
+
+
+
 
 
 __kernel void naive_normalized_cross_correlation(
@@ -19,9 +31,7 @@ __kernel void naive_normalized_cross_correlation(
     int  ny = num_pixels_y;
     int  nx = num_pixels_x;
     int  knx = template_width;
-    int2 image_index_2d = (int2)((blockIdx.x * blockDim.x) + threadIdx.x, (blockIdx.y * blockDim.y) + threadIdx.y);
-
-    ; int2 image_index_2d = (int2)((blockIdx.x * blockDim.x) + threadIdx.x, (blockIdx.y * blockDim.y) + threadIdx.y);
+    int2 image_index_2d = (int2)((get_group_id(0) * get_local_size(0)) + get_local_id(0),(get_group_id(1) * get_local_size(1)) + get_local_id(1));
     int  image_index_1d = (nx * image_index_2d.y) + image_index_2d.x;
 
     if (image_index_2d.x < nx && image_index_2d.y < ny)
@@ -32,8 +42,8 @@ __kernel void naive_normalized_cross_correlation(
         {
             for (int x = -template_half_width; x <= template_half_width; x++)
             {
-                int2 image_offset_index_2d = (int2)(image_index_2d.x + x, image_index_2d.y + y);
-                int2 image_offset_index_2d_clamped = (int2)(min(nx - 1, max(0, image_offset_index_2d.x)), min(ny - 1, max(0, image_offset_index_2d.y)));
+                int2 image_offset_index_2d = (int2)(image_index_2d.x + x,image_index_2d.y + y);
+                int2 image_offset_index_2d_clamped = (int2)((nx - 1) < ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)) ? (nx - 1) : ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)),(ny - 1) < ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)) ? (ny - 1) : ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)));
                 int  image_offset_index_1d_clamped = (nx * image_offset_index_2d_clamped.y) + image_offset_index_2d_clamped.x;
 
                 unsigned char image_offset_value = d_original[image_offset_index_1d_clamped];
@@ -52,14 +62,14 @@ __kernel void naive_normalized_cross_correlation(
         {
             for (int x = -template_half_width; x <= template_half_width; x++)
             {
-                int2 image_offset_index_2d = (int2)(image_index_2d.x + x, image_index_2d.y + y);
-                int2 image_offset_index_2d_clamped = (int2)(min(nx - 1, max(0, image_offset_index_2d.x)), min(ny - 1, max(0, image_offset_index_2d.y)));
+                int2 image_offset_index_2d = (int2)(image_index_2d.x + x,image_index_2d.y + y);
+                int2 image_offset_index_2d_clamped = (int2)((nx - 1) < ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)) ? (nx - 1) : ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)),(ny - 1) < ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)) ? (ny - 1) : ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)));
                 int  image_offset_index_1d_clamped = (nx * image_offset_index_2d_clamped.y) + image_offset_index_2d_clamped.x;
 
                 unsigned char image_offset_value = d_original[image_offset_index_1d_clamped];
                 float         image_diff = (float)image_offset_value - image_mean;
 
-                int2 template_index_2d = (int2)(x + template_half_width, y + template_half_height);
+                int2 template_index_2d = (int2)(x + template_half_width,y + template_half_height);
                 int  template_index_1d = (knx * template_index_2d.y) + template_index_2d.x;
 
                 unsigned char template_value = d_template[template_index_1d];
@@ -109,14 +119,14 @@ __kernel void remove_redness_from_coordinates(
     if (global_index_1d < num_coordinates)
     {
         unsigned int image_index_1d = d_coordinates[imgSize - global_index_1d - 1];
-        ushort2 image_index_2d = make_ushort2(image_index_1d % num_pixels_x, image_index_1d / num_pixels_x);
+        ushort2 image_index_2d = (ushort2)(image_index_1d % num_pixels_x,image_index_1d / num_pixels_x);
 
         for (int y = image_index_2d.y - template_half_height; y <= image_index_2d.y + template_half_height; y++)
         {
             for (int x = image_index_2d.x - template_half_width; x <= image_index_2d.x + template_half_width; x++)
             {
-                int2 image_offset_index_2d = (int2)(x, y);
-                int2 image_offset_index_2d_clamped = (int2)(min(nx - 1, max(0, image_offset_index_2d.x)), min(ny - 1, max(0, image_offset_index_2d.y)));
+                int2 image_offset_index_2d = (int2)(x,y);
+                int2 image_offset_index_2d_clamped = (int2)((nx - 1) < ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)) ? (nx - 1) : ((0) > (image_offset_index_2d.x) ? (0) : (image_offset_index_2d.x)),(ny - 1) < ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)) ? (ny - 1) : ((0) > (image_offset_index_2d.y) ? (0) : (image_offset_index_2d.y)));
                 int  image_offset_index_1d_clamped = (nx * image_offset_index_2d_clamped.y) + image_offset_index_2d_clamped.x;
 
                 unsigned char g_value = d_g[image_offset_index_1d_clamped];
@@ -151,6 +161,7 @@ __kernel void remove_redness_from_coordinates(
 
 //output an exr file
 //assumed to already be BGR
+
 
 
 
