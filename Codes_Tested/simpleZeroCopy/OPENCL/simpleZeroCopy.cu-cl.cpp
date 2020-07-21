@@ -33,8 +33,7 @@ void __cu2cl_Init_simpleZeroCopy_cu() {
     #else
     progLen = __cu2cl_LoadProgramSource("simpleZeroCopy.cu-cl.cl", &progSrc);
     __cu2cl_Program_simpleZeroCopy_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
-    //printf("clCreateProgramWithSource for simpleZeroCopy.cu-cl.cl: %s
-", getErrorString(err));    #endif
+    //printf("clCreateProgramWithSource for simpleZeroCopy.cu-cl.cl: %s\n", getErrorString(err));    #endif
     free((void *) progSrc);
     err = clBuildProgram(__cu2cl_Program_simpleZeroCopy_cu, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
     /*printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram*/
