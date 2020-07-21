@@ -1579,15 +1579,15 @@ private:
             }
             else if (enumString == "cudaMemcpyHostToDevice") {
                 //clEnqueueWriteBuffer
-                newExpr = "err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL);\n//printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDest + ": %s\\n\", getErrorString(err))";
+                newExpr = "err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE, 0, " + newCount + ", " + newSrc + ", 0, NULL, NULL);\n//printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToHost") {
                 //clEnqueueReadBuffer
-                newExpr = "err = clEnqueueReadBuffer(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDest + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
+                newExpr = "err = clEnqueueReadBuffer(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE, 0, " + newCount + ", " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
             }
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
-                newExpr = "err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDest + ": %s\\n\", getErrorString(err))";
+                newExpr = "err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
             }
             else {
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
