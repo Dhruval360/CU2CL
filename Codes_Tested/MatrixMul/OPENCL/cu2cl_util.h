@@ -29,6 +29,7 @@ cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end);
 
 cl_int __cu2cl_FreeHost(void *ptr, cl_mem clMem);
 
+
 const char *getErrorString(cl_int error);
 
 void __cu2cl_Init_MatrixMul_cu();

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -32,7 +31,7 @@ void __cu2cl_Init_BoxBlur_TotalVariation_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_BoxBlur_TotalVariation_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_box_blur = clCreateKernel(__cu2cl_Program_BoxBlur_TotalVariation_cu, "box_blur", &err);
     /*printf("__cu2cl_Kernel_box_blur creation: %s
@@ -282,7 +281,7 @@ cl_mem d_bluelight;
 //printf("clCreateBuffer for device variable d_bluelight is: %s\n", getErrorString(err));
 
 	err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
 
 	const size_t blockSize[3] = {32, 32, 1};
 	const size_t gridSize[3] = {(cols / blockSize[0]) + 1, (rows / blockSize[1]) + 1, 1};
@@ -309,7 +308,7 @@ globalWorkSize[2] = gridSize[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_separateChannels, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_separateChannels: %s\n", getErrorString(err));
 	err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
 
 
 	//I have made processing of each channel to be run on different streams which gave me a significant speedup of 40% over running all on the same stream 
@@ -430,7 +429,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_light_edge_det
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_light_edge_detection: %s\n", getErrorString(err));
 
 	err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
 	err = clSetKernelArg(__cu2cl_Kernel_recombineChannels, 0, sizeof(cl_mem), &d_redBlurred);
@@ -476,11 +475,11 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChann
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_recombineChannels: %s\n", getErrorString(err));
 
 	err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
 
-	clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
+	err = clEnqueueReadBuffer(s1, d_outputImageRGBA, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA.ptr<unsigned char>(0), 0, NULL, NULL);
 //printf("Memory copy from device variable outputImageRGBA.ptr<unsigned char>(0) to host variable d_outputImageRGBA in stream s1: %s\n", getErrorString(err));
-	clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
+	err = clEnqueueReadBuffer(s2, d_outputImageRGBA2, CL_FALSE, 0, sizeof(uchar4) * totalPixels, outputImageRGBA2.ptr<unsigned char>(0), 0, NULL, NULL);
 //printf("Memory copy from device variable outputImageRGBA2.ptr<unsigned char>(0) to host variable d_outputImageRGBA2 in stream s2: %s\n", getErrorString(err));
 
 	float milliseconds = 0;

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -15,26 +14,6 @@ cl_mem __cu2cl_Mem_h_b;
 cl_mem __cu2cl_Mem_h_c;
 cl_mem __cu2cl_Mem_h_cc;
 
-cl_kernel __cu2cl_Kernel_gpu_matrix_mult;
-cl_kernel __cu2cl_Kernel_gpu_square_matrix_mult;
-cl_kernel __cu2cl_Kernel_gpu_matrix_transpose;
-cl_program __cu2cl_Program_MatrixMul_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_MatrixMul_cu() {
-    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_mult);
-    clReleaseKernel(__cu2cl_Kernel_gpu_square_matrix_mult);
-    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_transpose);
-    clReleaseProgram(__cu2cl_Program_MatrixMul_cu);
-}
 
 cl_int err;
 void __cu2cl_Init_MatrixMul_cu() {
@@ -56,7 +35,7 @@ void __cu2cl_Init_MatrixMul_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_MatrixMul_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_gpu_matrix_mult = clCreateKernel(__cu2cl_Program_MatrixMul_cu, "gpu_matrix_mult", &err);
     /*printf("__cu2cl_Kernel_gpu_matrix_mult creation: %s
@@ -69,6 +48,26 @@ void __cu2cl_Init_MatrixMul_cu() {
 ", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_matrix_transpose*/
 }
 
+cl_kernel __cu2cl_Kernel_gpu_matrix_mult;
+cl_kernel __cu2cl_Kernel_gpu_square_matrix_mult;
+cl_kernel __cu2cl_Kernel_gpu_matrix_transpose;
+cl_program __cu2cl_Program_MatrixMul_cu;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_MatrixMul_cu() {
+    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_mult);
+    clReleaseKernel(__cu2cl_Kernel_gpu_square_matrix_mult);
+    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_transpose);
+    clReleaseProgram(__cu2cl_Program_MatrixMul_cu);
+}
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -275,7 +274,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_gpu_matrix_mul
     err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_c, CL_TRUE, 0, sizeof(int)*m*k, h_c, 0, NULL, NULL);
 //printf("Memory copy from device variable h_c to host variable d_c: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
     // time counting terminate
     err = clEnqueueMarker(__cu2cl_CommandQueue, &stop);
 //printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));

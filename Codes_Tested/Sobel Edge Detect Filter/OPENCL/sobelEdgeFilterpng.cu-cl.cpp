@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -32,7 +31,7 @@ void __cu2cl_Init_sobelEdgeFilterpng_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_sobelEdgeFilterpng_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_sobelGpu = clCreateKernel(__cu2cl_Program_sobelEdgeFilterpng_cu, "sobelGpu", &err);
     /*printf("__cu2cl_Kernel_sobelGpu creation: %s
@@ -41,6 +40,8 @@ void __cu2cl_Init_sobelEdgeFilterpng_cu() {
 
 cl_kernel __cu2cl_Kernel_sobelGpu;
 cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
+extern cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
+extern cl_program __cu2cl_Program_grayscale_cu;
 extern const char *progSrc;
 extern size_t progLen;
 
@@ -216,9 +217,9 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_sobelGpu, 3, N
   
   // checking if any errors occured
   cl_int cudaerror = err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); // waits for completion, returns error code
+//printf("clFinish return message = %s\n", getErrorString(err)); // waits for completion, returns error code
   if ( err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)) != CL_SUCCESS ) fprintf( stderr, "Cuda failed to synchronize:\n"); // if error, output error
+//printf("clFinish return message = %s\n", getErrorString(err)) != CL_SUCCESS ) fprintf( stderr, "Cuda failed to synchronize:\n"); // if error, output error
   // gettimeofday(&t2, 0);
   
   // printf("survived kernel\n");

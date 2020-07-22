@@ -18,7 +18,7 @@ void __cu2cl_Init_transpose_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_transpose_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_transpose_serial = clCreateKernel(__cu2cl_Program_transpose_cu, "transpose_serial", &err);
     /*printf("__cu2cl_Kernel_transpose_serial creation: %s
@@ -71,7 +71,6 @@ void __cu2cl_Cleanup_transpose_cu() {
     clReleaseKernel(__cu2cl_Kernel_transpose_parallel_per_element_tiled_padded16);
     clReleaseProgram(__cu2cl_Program_transpose_cu);
 }
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>

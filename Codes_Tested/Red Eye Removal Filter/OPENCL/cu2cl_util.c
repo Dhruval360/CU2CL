@@ -130,7 +130,7 @@ void __cu2cl_Init() {
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
     __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-//printf("Creation of main command queue is: %s", getErrorString(err));
+//printf("Creation of main command queue is: %s\n", getErrorString(err));
     __cu2cl_Init_redEYECPU_cu();
     __cu2cl_Init_redEyeGPU_cu();
     #ifdef WITH_ALTERA
@@ -139,16 +139,23 @@ void __cu2cl_Init() {
     #else
     progLen = __cu2cl_LoadProgramSource("cu2cl_util.cl", &progSrc);
     __cu2cl_Util_Program = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
-    //printf("clCreateProgramWithSource for cu2cl_util.cl: %s
-", getErrorString(err));
+    //printf("clCreateProgramWithSource for cu2cl_util.cl: %s\n", getErrorString(err));
     #endif
     free((void *) progSrc);
     err = clBuildProgram(__cu2cl_Util_Program, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
     //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
-    if(err != CL_SUCCESS){        std::vector<char> buildLogUtil;        size_t logSizeUtil;        err = clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSizeUtil);        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));        buildLogUtil.resize(logSizeUtil);        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);        std::cout << &buildLogUtil[0] << '
-';    }    __cu2cl_Kernel___cu2cl_Memset = clCreateKernel(__cu2cl_Util_Program, "__cu2cl_Memset", &err);
-    /*printf("__cu2cl_Kernel___cu2cl_Memset creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: __cu2cl_Memset*/
+    if(err != CL_SUCCESS){
+        std::vector<char> buildLogUtil;
+        size_t logSizeUtil;
+        err = clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSizeUtil);
+        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
+        buildLogUtil.resize(logSizeUtil);
+        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);
+        printf("%s\n", &buildLogUtil[0]);
+    }
+
+    __cu2cl_Kernel___cu2cl_Memset = clCreateKernel(__cu2cl_Util_Program, "__cu2cl_Memset", &err);
+    /*printf("__cu2cl_Kernel___cu2cl_Memset creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: __cu2cl_Memset*/
 }
 
 void __cu2cl_Cleanup() {

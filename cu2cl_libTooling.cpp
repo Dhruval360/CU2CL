@@ -4167,7 +4167,7 @@ public:
             CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));\n";
             CLInit += "        buildLog.resize(logSize);\n";
             CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);\n";
-            CLInit += "        printf("%s\n", &buildLog[0]);\n";
+            CLInit += "        printf(\"%s\\n\", &buildLog[0]);\n";
             CLInit += "    }\n";
             // and initialize all its kernels
             for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {
@@ -4625,7 +4625,7 @@ int main(int argc, const char ** argv) {
         CU2CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));\n";
         CU2CLInit += "        buildLogUtil.resize(logSizeUtil);\n";
         CU2CLInit += "        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);\n";
-        CU2CLInit += "        printf("%s\n", &buildLogUtil[0]);\n";
+        CU2CLInit += "        printf(\"%s\\n\", &buildLogUtil[0]);\n";
         CU2CLInit += "    }\n\n";
         // and initialize all its kernels
         for (std::vector<std::string>::iterator i = UtilKernels.begin(), e = UtilKernels.end();

@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -11,22 +10,6 @@
 
 
 
-cl_kernel __cu2cl_Kernel_device_add;
-cl_program __cu2cl_Program_vectorAdd_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_vectorAdd_cu() {
-    clReleaseKernel(__cu2cl_Kernel_device_add);
-    clReleaseProgram(__cu2cl_Program_vectorAdd_cu);
-}
 
 cl_int err;
 void __cu2cl_Init_vectorAdd_cu() {
@@ -48,13 +31,29 @@ void __cu2cl_Init_vectorAdd_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_vectorAdd_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_device_add = clCreateKernel(__cu2cl_Program_vectorAdd_cu, "device_add", &err);
     /*printf("__cu2cl_Kernel_device_add creation: %s
 ", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: device_add*/
 }
 
+cl_kernel __cu2cl_Kernel_device_add;
+cl_program __cu2cl_Program_vectorAdd_cu;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_vectorAdd_cu() {
+    clReleaseKernel(__cu2cl_Kernel_device_add);
+    clReleaseProgram(__cu2cl_Program_vectorAdd_cu);
+}
 #include <stdio.h>
 # define N 512
 

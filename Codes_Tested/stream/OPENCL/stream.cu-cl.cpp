@@ -18,7 +18,7 @@ void __cu2cl_Init_stream_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_stream_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_kernel = clCreateKernel(__cu2cl_Program_stream_cu, "kernel", &err);
     /*printf("__cu2cl_Kernel_kernel creation: %s
@@ -41,7 +41,6 @@ void __cu2cl_Cleanup_stream_cu() {
     clReleaseKernel(__cu2cl_Kernel_kernel);
     clReleaseProgram(__cu2cl_Program_stream_cu);
 }
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>

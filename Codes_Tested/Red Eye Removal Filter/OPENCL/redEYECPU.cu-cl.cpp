@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -32,7 +31,7 @@ void __cu2cl_Init_redEYECPU_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_redEYECPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "naive_normalized_cross_correlation", &err);
     /*printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s
@@ -403,7 +402,7 @@ cl_mem d_gt;
         numRowsTemplate * numColsTemplate, r_mean);
 
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     checkCudaErrors(cudaGetLastError());
     // printf("I am still okay\n");
@@ -417,7 +416,7 @@ cl_mem d_gt;
         numRowsTemplate * numColsTemplate, b_mean);
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
+//printf("clFinish return message = %s\n", getErrorString(err)); checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (green_data,
         d_g,
@@ -429,7 +428,7 @@ cl_mem d_gt;
 
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
+//printf("clFinish return message = %s\n", getErrorString(err)); checkCudaErrors(cudaGetLastError());
 
     float* h_red_data, * h_blue_data, * h_green_data;
     h_red_data = new float[numElems];
@@ -442,7 +441,7 @@ cl_mem d_gt;
 //printf("Memory copy from device variable h_green_data to host variable green_data: %s\n", getErrorString(err));
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
+//printf("clFinish return message = %s\n", getErrorString(err)); checkCudaErrors(cudaGetLastError());
     float* combined = new float[numElems];
     float mini = 0;
 
@@ -507,7 +506,7 @@ cl_mem d_gt;
         9, 9);
 /*CU2CL Unsupported -- Unsupported CUDA call: cudaGetLastError*/
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); checkCudaErrors(cudaGetLastError());
+//printf("clFinish return message = %s\n", getErrorString(err)); checkCudaErrors(cudaGetLastError());
 
 
     uchar* h_op_r = new uchar[numElems];
