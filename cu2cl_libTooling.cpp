@@ -140,6 +140,7 @@
 
 #define CL_MEMSET \
     "cl_int __cu2cl_Memset(cl_mem devPtr, int value, size_t count) {\n" \
+    "	  cl_int err;\n"\
     "    err = clSetKernelArg(__cu2cl_Kernel___cu2cl_Memset, 0, sizeof(cl_mem), &devPtr);\n" \
     "    err = clSetKernelArg(__cu2cl_Kernel___cu2cl_Memset, 1, sizeof(cl_uchar), &value);\n" \
     "    err = clSetKernelArg(__cu2cl_Kernel___cu2cl_Memset, 2, sizeof(cl_uint), &count);\n" \
@@ -303,6 +304,7 @@
 
 #define CU2CL_SET_DEVICE \
     "void __cu2cl_SetDevice(cl_uint devID) {\n" \
+    "   cl_int err;\n"\
     "   if (__cu2cl_AllDevices_size == 0) {\n" \
     "       __cu2cl_ScanDevices();\n" \
     "   }\n" \
@@ -324,6 +326,7 @@
 
 #define CU2CL_SET_DEVICE \
     "void __cu2cl_SetDevice(cl_uint devID) {\n" \
+    "   cl_int err;\n"\
     "   if (__cu2cl_AllDevices_size == 0) {\n" \
     "       __cu2cl_ScanDevices();\n" \
     "   }\n" \
@@ -1336,7 +1339,7 @@ private:
             Expr *stream = cudaCall->getArg(0);
             std::string newStream;
             RewriteHostExpr(stream, newStream);
-            newExpr = "clFinish(" + newStream + ");\n//printf(\"clFinish(" + newStream + ") is: %s\", getErrorString(err))";
+            newExpr = "clFinish(" + newStream + ");\n//printf(\"clFinish(" + newStream + ") is: %s\\n\", getErrorString(err))";
         }
         else if (funcName == "cudaStreamWaitEvent") {
             //Replace with clEnqueueWaitForEvents
