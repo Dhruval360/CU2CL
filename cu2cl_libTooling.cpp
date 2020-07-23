@@ -4173,16 +4173,18 @@ public:
             CLInit += "        printf(\"%s\\n\", &buildLog[0]);\n";
             CLInit += "    }\n";
             // and initialize all its kernels
-            for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {
+            for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end();
+                 li != le; li++) {
                 std::string kernelName = (*li).str();
                 CLInit += "    __cu2cl_Kernel_" + kernelName + " = clCreateKernel(__cu2cl_Program_" + file + ", \"" + kernelName + "\", &err);\n";
-                CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName +"*/\n";
+                CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName +"*/\n";
             }
             CLInit += "}\n\n";
             //Add the initializer to a deferred list of boilerplate
             // to be inserted after relevant cl_program/cl_kernel declarations
             LocalBoilDefs[(*i).first].push_back(CLInit);
         }
+
 
         //Insert cleanup code at bottom of main
         //For each loaded cl_program
@@ -4682,6 +4684,7 @@ int main(int argc, const char ** argv) {
     *cu2cl_header << "void __cu2cl_Init();\n";
     *cu2cl_header << "\nvoid __cu2cl_Cleanup();\n";
     *cu2cl_util << "#include \"cu2cl_util.h\"\n";
+    *cu2cl_util << "#include <vector>\n";
 
     //After all Source files have been processed, they will have generated all global
     // information necessary to finalize declarations
