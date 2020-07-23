@@ -1,3 +1,4 @@
+
 /*
 * CU2CL - A prototype CUDA-to-OpenCL translator built on the Clang compiler infrastructure
 * Version 0.8.0b (beta)
@@ -3896,8 +3897,8 @@ public:
             MainFuncName = "main";
         //Ensure that each time a new RewriteCUDA instance is spawned this gets reset
         MainDecl = NULL;
-	
-	HostIncludes += "#include <iostream>\n";
+
+        HostIncludes += "#include <iostream>\n";
         HostIncludes += "#include <vector>\n";
         HostIncludes += "#ifdef __APPLE__\n";
         HostIncludes += "#include <OpenCL/opencl.h>\n";
@@ -4143,9 +4144,10 @@ public:
                 GlobalHDecls.push_back("void __cu2cl_Init_" + file + "();\n");
                 CU2CLInit += "    __cu2cl_Init_" + file + "();\n";
             }
-	        CLInit = "cl_int err;\n";
+            GlobalCDecls[(*i).first].push_back("cl_int err;\n");
+            // CLInit = "cl_int err;\n";
             //CLInit += CU2CL_ERROR_HANDLING;
-            CLInit += "void __cu2cl_Init_" + file + "() {\n";
+            CLInit = "void __cu2cl_Init_" + file + "() {\n";
             std::list<llvm::StringRef> &l = (*i).second;
             //Paul: Addition to generate ALTERA .aocx build from binary with an ifdef
             CLInit += "    #ifdef WITH_ALTERA\n";
@@ -4174,7 +4176,7 @@ public:
             for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {
                 std::string kernelName = (*li).str();
                 CLInit += "    __cu2cl_Kernel_" + kernelName + " = clCreateKernel(__cu2cl_Program_" + file + ", \"" + kernelName + "\", &err);\n";
-                CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName +"*/\n";
+                CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName + "*/\n";
             }
             CLInit += "}\n\n";
             //Add the initializer to a deferred list of boilerplate
