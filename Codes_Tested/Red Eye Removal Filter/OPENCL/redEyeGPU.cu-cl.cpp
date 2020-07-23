@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -32,7 +31,7 @@ void __cu2cl_Init_redEyeGPU_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_redEyeGPU_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEyeGPU_cu, "naive_normalized_cross_correlation", &err);
     /*printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s
@@ -280,7 +279,7 @@ globalWorkSize[2] = hist_block_dim[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_histogram_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_histogram_kernel: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
     // checkCudaErrors(cudaGetLastError());
 
     err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_bins, CL_TRUE, 0, histo_size, &h_bins, 0, NULL, NULL);
@@ -308,7 +307,7 @@ globalWorkSize[0] = ( = {1, 1, 1})*localWorkSize[0];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_exclusive_scan_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_exclusive_scan_kernel: %s\n", getErrorString(err));
       err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
       // checkCudaErrors(cudaGetLastError());
     }
     // calculate the move positions
@@ -339,14 +338,14 @@ globalWorkSize[2] = hist_block_dim[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_move_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_move_kernel: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); 
+//printf("clFinish return message = %s\n", getErrorString(err)); 
     // checkCudaErrors(cudaGetLastError());
     err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputVals, d_inputVals, 0, 0, arr_size, 0, NULL, NULL);
 //printf("Memory copy from device variable d_outputVals to device variable d_inputVals: %s\n", getErrorString(err));
     err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, d_outputPos, d_inputPos, 0, 0, arr_size, 0, NULL, NULL);
 //printf("Memory copy from device variable d_outputPos to device variable d_inputPos: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); 
+//printf("clFinish return message = %s\n", getErrorString(err)); 
     // checkCudaErrors(cudaGetLastError());
   }
   clReleaseMemObject(d_moved);
@@ -498,7 +497,7 @@ cl_mem d_gt;
         numRowsTemplate * numColsTemplate, r_mean);
 
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
     // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (blue_data,
@@ -509,7 +508,7 @@ cl_mem d_gt;
         templateHalfWidth, numColsTemplate,
         numRowsTemplate * numColsTemplate, b_mean);
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); 
+//printf("clFinish return message = %s\n", getErrorString(err)); 
     // checkCudaErrors(cudaGetLastError());
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (green_data,
@@ -521,7 +520,7 @@ cl_mem d_gt;
         numRowsTemplate * numColsTemplate, g_mean);
 
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err));
+//printf("clFinish return message = %s\n", getErrorString(err));
      // checkCudaErrors(cudaGetLastError());
 
     float* h_red_data, * h_blue_data, * h_green_data;
@@ -535,7 +534,7 @@ cl_mem d_gt;
     err = clEnqueueReadBuffer(__cu2cl_CommandQueue, green_data, CL_TRUE, 0, sizeof(float) * numElems, h_green_data, 0, NULL, NULL);
 //printf("Memory copy from device variable h_green_data to host variable green_data: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); 
+//printf("clFinish return message = %s\n", getErrorString(err)); 
     // checkCudaErrors(cudaGetLastError());
     float* combined = new float[numElems];
     float mini = 0;
@@ -643,7 +642,7 @@ globalWorkSize[2] = grid2Size[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_remove_redness_from_coordinates, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_remove_redness_from_coordinates: %s\n", getErrorString(err));
     err = clFinish(__cu2cl_CommandQueue);
-//printf("clFinish return message = %s", getErrorString(err)); 
+//printf("clFinish return message = %s\n", getErrorString(err)); 
     // checkCudaErrors(cudaGetLastError());
 
     uchar* h_op_r = new uchar[numElems];

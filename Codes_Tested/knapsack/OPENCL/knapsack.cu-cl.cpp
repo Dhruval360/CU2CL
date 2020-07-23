@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -11,24 +10,6 @@
 
 
 
-cl_kernel __cu2cl_Kernel_knapsackGPU;
-cl_kernel __cu2cl_Kernel_knapsackGPU2;
-cl_program __cu2cl_Program_knapsack_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_knapsack_cu() {
-    clReleaseKernel(__cu2cl_Kernel_knapsackGPU);
-    clReleaseKernel(__cu2cl_Kernel_knapsackGPU2);
-    clReleaseProgram(__cu2cl_Program_knapsack_cu);
-}
 
 cl_int err;
 void __cu2cl_Init_knapsack_cu() {
@@ -50,7 +31,7 @@ void __cu2cl_Init_knapsack_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_knapsack_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_knapsackGPU = clCreateKernel(__cu2cl_Program_knapsack_cu, "knapsackGPU", &err);
     /*printf("__cu2cl_Kernel_knapsackGPU creation: %s
@@ -60,6 +41,24 @@ void __cu2cl_Init_knapsack_cu() {
 ", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: knapsackGPU2*/
 }
 
+cl_kernel __cu2cl_Kernel_knapsackGPU;
+cl_kernel __cu2cl_Kernel_knapsackGPU2;
+cl_program __cu2cl_Program_knapsack_cu;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_knapsack_cu() {
+    clReleaseKernel(__cu2cl_Kernel_knapsackGPU);
+    clReleaseKernel(__cu2cl_Kernel_knapsackGPU2);
+    clReleaseProgram(__cu2cl_Program_knapsack_cu);
+}
 #include<time.h>
 #include <stdio.h>
 #include<iostream>

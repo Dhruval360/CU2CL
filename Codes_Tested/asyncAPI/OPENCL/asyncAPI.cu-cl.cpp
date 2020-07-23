@@ -1,4 +1,3 @@
-#include <iostream>
 #include <vector>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
@@ -32,7 +31,7 @@ void __cu2cl_Init_asyncAPI_cu() {
         printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
         buildLog.resize(logSize);
         clGetProgramBuildInfo(__cu2cl_Program_asyncAPI_cu, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);
-        std::cout << &buildLog[0] << '\n';
+        printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_increment_kernel = clCreateKernel(__cu2cl_Program_asyncAPI_cu, "increment_kernel", &err);
     /*printf("__cu2cl_Kernel_increment_kernel creation: %s
@@ -164,7 +163,7 @@ globalWorkSize[1] = blocks[1]*localWorkSize[1];
 globalWorkSize[2] = blocks[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_increment_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_increment_kernel: %s\n", getErrorString(err));
-    clEnqueueReadBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
+    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
 //printf("Memory copy from device variable a to host variable d_a in stream __cu2cl_CommandQueue: %s\n", getErrorString(err));
     err = clEnqueueMarker(__cu2cl_CommandQueue, &stop);
 //printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));

@@ -8,6 +8,8 @@
 *   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 #include "cu2cl_util.h"
+extern cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
+extern cl_program __cu2cl_Program_grayscale_cu;
 extern cl_kernel __cu2cl_Kernel_sobelGpu;
 extern cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
 const char *progSrc;
@@ -123,7 +125,8 @@ void __cu2cl_Init() {
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
     __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-//printf("Creation of main command queue is: %s", getErrorString(err));
+//printf("Creation of main command queue is: %s\n", getErrorString(err));
+    __cu2cl_Init_grayscale_cu();
     __cu2cl_Init_sobelEdgeFilterpng_cu();
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("cu2cl_util.aocx", &progSrc);
@@ -131,22 +134,30 @@ void __cu2cl_Init() {
     #else
     progLen = __cu2cl_LoadProgramSource("cu2cl_util.cl", &progSrc);
     __cu2cl_Util_Program = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
-    //printf("clCreateProgramWithSource for cu2cl_util.cl: %s
-", getErrorString(err));
+    //printf("clCreateProgramWithSource for cu2cl_util.cl: %s\n", getErrorString(err));
     #endif
     free((void *) progSrc);
     err = clBuildProgram(__cu2cl_Util_Program, 1, &__cu2cl_Device, "-I . ", NULL, NULL);
     //printf("clBuildProgram : %s\n", getErrorString(err)); //Uncomment this line to access the error string of the error code returned by clBuildProgram
-    if(err != CL_SUCCESS){        std::vector<char> buildLogUtil;        size_t logSizeUtil;        err = clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSizeUtil);        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));        buildLogUtil.resize(logSizeUtil);        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);        std::cout << &buildLogUtil[0] << '
-';    }    __cu2cl_Kernel___cu2cl_Memset = clCreateKernel(__cu2cl_Util_Program, "__cu2cl_Memset", &err);
-    /*printf("__cu2cl_Kernel___cu2cl_Memset creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: __cu2cl_Memset*/
+    if(err != CL_SUCCESS){
+        std::vector<char> buildLogUtil;
+        size_t logSizeUtil;
+        err = clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, 0, NULL, &logSizeUtil);
+        printf("clGetProgramBuildInfo : %s\n", getErrorString(err));
+        buildLogUtil.resize(logSizeUtil);
+        clGetProgramBuildInfo(__cu2cl_Util_Program, __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSizeUtil, &buildLogUtil[0], NULL);
+        printf("%s\n", &buildLogUtil[0]);
+    }
+
+    __cu2cl_Kernel___cu2cl_Memset = clCreateKernel(__cu2cl_Util_Program, "__cu2cl_Memset", &err);
+    /*printf("__cu2cl_Kernel___cu2cl_Memset creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the __cu2cl_Kernel_: __cu2cl_Memset*/
 }
 
 void __cu2cl_Cleanup() {
     clReleaseKernel(__cu2cl_Kernel___cu2cl_Memset);
     clReleaseProgram(__cu2cl_Util_Program);
     __cu2cl_Cleanup_sobelEdgeFilterpng_cu();
+    __cu2cl_Cleanup_grayscale_cu();
     clReleaseCommandQueue(__cu2cl_CommandQueue);
     clReleaseContext(__cu2cl_Context);
 }

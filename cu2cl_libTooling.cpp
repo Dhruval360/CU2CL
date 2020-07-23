@@ -1,4 +1,3 @@
-
 /*
 * CU2CL - A prototype CUDA-to-OpenCL translator built on the Clang compiler infrastructure
 * Version 0.8.0b (beta)
@@ -4144,10 +4143,9 @@ public:
                 GlobalHDecls.push_back("void __cu2cl_Init_" + file + "();\n");
                 CU2CLInit += "    __cu2cl_Init_" + file + "();\n";
             }
-            GlobalCDecls[(*i).first].push_back("cl_int err;\n");
-            // CLInit = "cl_int err;\n";
+            CLInit = "cl_int err;\n";
             //CLInit += CU2CL_ERROR_HANDLING;
-            CLInit = "void __cu2cl_Init_" + file + "() {\n";
+            CLInit += "void __cu2cl_Init_" + file + "() {\n";
             std::list<llvm::StringRef> &l = (*i).second;
             //Paul: Addition to generate ALTERA .aocx build from binary with an ifdef
             CLInit += "    #ifdef WITH_ALTERA\n";
