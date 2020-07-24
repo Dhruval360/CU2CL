@@ -25,13 +25,11 @@ size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
 cl_int __cu2cl_Memset(cl_mem devPtr, int value, size_t count);
 
-
 const char *getErrorString(cl_int error);
 
 void __cu2cl_Init_grayscale_cu();
 
 void __cu2cl_Cleanup_grayscale_cu();
-
 
 const char *getErrorString(cl_int error);
 

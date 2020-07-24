@@ -11,11 +11,28 @@
 
 
 
+cl_kernel __cu2cl_Kernel_dotProd;
+cl_program __cu2cl_Program_dotprod_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_dotprod_cu() {
+    clReleaseKernel(__cu2cl_Kernel_dotProd);
+    clReleaseProgram(__cu2cl_Program_dotprod_cu);
+}
 void __cu2cl_Init_dotprod_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("dotprod_cu_cl.aocx", &progSrc);
     __cu2cl_Program_dotprod_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for dotprod.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("dotprod.cu-cl.cl", &progSrc);
     __cu2cl_Program_dotprod_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,26 +51,9 @@ void __cu2cl_Init_dotprod_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_dotProd = clCreateKernel(__cu2cl_Program_dotprod_cu, "dotProd", &err);
-    /*printf("__cu2cl_Kernel_dotProd creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: dotProd*/
+    /*printf("__cu2cl_Kernel_dotProd creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: dotProd*/
 }
 
-cl_kernel __cu2cl_Kernel_dotProd;
-cl_program __cu2cl_Program_dotprod_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_dotprod_cu() {
-    clReleaseKernel(__cu2cl_Kernel_dotProd);
-    clReleaseProgram(__cu2cl_Program_dotprod_cu);
-}
 #include<stdio.h>
 #include<iostream>
 
@@ -85,11 +85,11 @@ cl_mem dev_partial_c;
 	
 	// allocate the memory on the gpu
 	*(void**)&dev_a = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, N*sizeof(float), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&dev_a is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&dev_a: %s\n", getErrorString(err));
 	*(void**)&dev_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, N*sizeof(float), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&dev_b is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&dev_b: %s\n", getErrorString(err));
 	*(void**)&dev_partial_c = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, blocksPerGrid*sizeof(float), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&dev_partial_c is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&dev_partial_c: %s\n", getErrorString(err));
 	
 	// fill in the host mempory with data
 	for(int i=0; i<N; i++) {
@@ -105,11 +105,11 @@ cl_mem dev_partial_c;
 //printf("Memory copy from host variable b to device variable dev_b: %s\n", getErrorString(err));
 	
 	err = clSetKernelArg(__cu2cl_Kernel_dotProd, 0, sizeof(cl_mem), &dev_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_dotProd is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_dotProd: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_dotProd, 1, sizeof(cl_mem), &dev_b);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_dotProd is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_dotProd: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_dotProd, 2, sizeof(cl_mem), &dev_partial_c);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_dotProd is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_dotProd: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = threadsPerBlock;
 globalWorkSize[0] = (blocksPerGrid)*localWorkSize[0];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_dotProd, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);

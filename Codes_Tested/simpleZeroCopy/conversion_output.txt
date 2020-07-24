@@ -53,7 +53,7 @@ End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/simpleZeroCopy/CUDA/simpleZeroCopy.cu:22:10: fatal error: 'helper_functions.h' file not found
 #include <helper_functions.h>
          ^
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/simpleZeroCopy/CUDA/simpleZeroCopy.cu Translation Time: 35 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/simpleZeroCopy/CUDA/simpleZeroCopy.cu Translation Time: 34 microseconds
 1 error generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/simpleZeroCopy/CUDA/simpleZeroCopy.cu.
 Retained 1 ASTContexts!

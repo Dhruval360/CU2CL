@@ -10,6 +10,7 @@
 #include "cu2cl_util.h"
 extern cl_kernel __cu2cl_Kernel_kernel;
 extern cl_program __cu2cl_Program_stream_cu;
+extern cl_int err;
 const char *progSrc;
 size_t progLen;
 
@@ -112,7 +113,7 @@ void __cu2cl_Init() {
     clGetDeviceIDs(__cu2cl_Platform, CL_DEVICE_TYPE_ALL, 1, &__cu2cl_Device, NULL);
     __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
     __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-//printf("Creation of main command queue is: %s\n", getErrorString(err));
+//printf("Creation of main command queue: %s\n", getErrorString(err));
     __cu2cl_Init_stream_cu();
 }
 

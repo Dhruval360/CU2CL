@@ -4168,7 +4168,7 @@ public:
             CLInit += "        printf(\"clGetProgramBuildInfo : %s\\n\", getErrorString(err));\n";
             CLInit += "        buildLog.resize(logSize);\n";
             CLInit += "        clGetProgramBuildInfo(__cu2cl_Program_" + file + ", __cu2cl_Device, CL_PROGRAM_BUILD_LOG, logSize, &buildLog[0], NULL);\n";
-            CLInit += "        printf(\"%s\\n\", &buildLog[0])\n";
+            CLInit += "        printf(\"%s\\n\", &buildLog[0]);\n";
             CLInit += "    }\n";
             // and initialize all its kernels
             for (std::list<llvm::StringRef>::iterator li = l.begin(), le = l.end(); li != le; li++) {

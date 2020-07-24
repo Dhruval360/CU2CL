@@ -11,11 +11,33 @@
 
 
 
+cl_kernel __cu2cl_Kernel_sobelGpu;
+cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
 cl_int err;
+extern cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
+extern cl_program __cu2cl_Program_grayscale_cu;
+extern cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
+extern cl_program __cu2cl_Util_Program;
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_sobelEdgeFilterpng_cu() {
+    clReleaseKernel(__cu2cl_Kernel_sobelGpu);
+    clReleaseProgram(__cu2cl_Program_sobelEdgeFilterpng_cu);
+}
 void __cu2cl_Init_sobelEdgeFilterpng_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("sobelEdgeFilterpng_cu_cl.aocx", &progSrc);
     __cu2cl_Program_sobelEdgeFilterpng_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for sobelEdgeFilterpng.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("sobelEdgeFilterpng.cu-cl.cl", &progSrc);
     __cu2cl_Program_sobelEdgeFilterpng_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,30 +56,9 @@ void __cu2cl_Init_sobelEdgeFilterpng_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_sobelGpu = clCreateKernel(__cu2cl_Program_sobelEdgeFilterpng_cu, "sobelGpu", &err);
-    /*printf("__cu2cl_Kernel_sobelGpu creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: sobelGpu*/
+    /*printf("__cu2cl_Kernel_sobelGpu creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: sobelGpu*/
 }
 
-cl_kernel __cu2cl_Kernel_sobelGpu;
-cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
-extern cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
-extern cl_program __cu2cl_Program_grayscale_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
-extern cl_program __cu2cl_Util_Program;
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_sobelEdgeFilterpng_cu() {
-    clReleaseKernel(__cu2cl_Kernel_sobelGpu);
-    clReleaseProgram(__cu2cl_Program_sobelEdgeFilterpng_cu);
-}
 #include<iostream>
 #include<stdio.h>
 #include <math.h>
@@ -170,9 +171,9 @@ cl_mem d_out;
   // writeImage("personcameas.png", in);
 
   *(void **)&d_in = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, (w*h), NULL, &err);
-//printf("clCreateBuffer for device variable *(void **)&d_in is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **)&d_in: %s\n", getErrorString(err));
   *(void **)&d_out = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, (w*h), NULL, &err);
-//printf("clCreateBuffer for device variable *(void **)&d_out is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **)&d_out: %s\n", getErrorString(err));
 
   err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_in, CL_TRUE, 0, w*h, in.pixels, 0, NULL, NULL);
 //printf("Memory copy from host variable in.pixels to device variable d_in: %s\n", getErrorString(err));
@@ -199,13 +200,13 @@ cl_mem d_out;
   
   // gettimeofday(&t1, 0);
   err = clSetKernelArg(__cu2cl_Kernel_sobelGpu, 0, sizeof(cl_mem), &d_in);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_sobelGpu is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_sobelGpu: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sobelGpu, 1, sizeof(cl_mem), &d_out);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_sobelGpu is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_sobelGpu: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sobelGpu, 2, sizeof(unsigned int), &w);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_sobelGpu is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_sobelGpu: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_sobelGpu, 3, sizeof(unsigned int), &h);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_sobelGpu is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_sobelGpu: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = threadsPerBlock[0];
 localWorkSize[1] = threadsPerBlock[1];
 localWorkSize[2] = threadsPerBlock[2];
