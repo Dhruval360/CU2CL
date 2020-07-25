@@ -11,11 +11,28 @@
 
 
 
+cl_kernel __cu2cl_Kernel_vectorAddGPU;
+cl_program __cu2cl_Program_simpleZeroCopy_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_simpleZeroCopy_cu() {
+    clReleaseKernel(__cu2cl_Kernel_vectorAddGPU);
+    clReleaseProgram(__cu2cl_Program_simpleZeroCopy_cu);
+}
 void __cu2cl_Init_simpleZeroCopy_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("simpleZeroCopy_cu_cl.aocx", &progSrc);
     __cu2cl_Program_simpleZeroCopy_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for simpleZeroCopy.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("simpleZeroCopy.cu-cl.cl", &progSrc);
     __cu2cl_Program_simpleZeroCopy_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,26 +51,9 @@ void __cu2cl_Init_simpleZeroCopy_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_vectorAddGPU = clCreateKernel(__cu2cl_Program_simpleZeroCopy_cu, "vectorAddGPU", &err);
-    /*printf("__cu2cl_Kernel_vectorAddGPU creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: vectorAddGPU*/
+    /*printf("__cu2cl_Kernel_vectorAddGPU creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: vectorAddGPU*/
 }
 
-cl_kernel __cu2cl_Kernel_vectorAddGPU;
-cl_program __cu2cl_Program_simpleZeroCopy_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_simpleZeroCopy_cu() {
-    clReleaseKernel(__cu2cl_Kernel_vectorAddGPU);
-    clReleaseProgram(__cu2cl_Program_simpleZeroCopy_cu);
-}
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.
@@ -242,13 +242,13 @@ __cu2cl_Init();
     size_t block[3] = {256, 1, 1};
     size_t grid[3] = {(unsigned int)ceil(nelem/(float)block[0]), 1, 1};
     err = clSetKernelArg(__cu2cl_Kernel_vectorAddGPU, 0, sizeof(float *), &d_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_vectorAddGPU is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_vectorAddGPU: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_vectorAddGPU, 1, sizeof(float *), &d_b);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_vectorAddGPU is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_vectorAddGPU: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_vectorAddGPU, 2, sizeof(float *), &d_c);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_vectorAddGPU is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_vectorAddGPU: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_vectorAddGPU, 3, sizeof(int), &nelem);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_vectorAddGPU is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_vectorAddGPU: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = block[0];
 localWorkSize[1] = block[1];
 localWorkSize[2] = block[2];

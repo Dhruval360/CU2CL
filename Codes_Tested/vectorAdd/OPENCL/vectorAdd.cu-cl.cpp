@@ -11,11 +11,28 @@
 
 
 
+cl_kernel __cu2cl_Kernel_device_add;
+cl_program __cu2cl_Program_vectorAdd_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_vectorAdd_cu() {
+    clReleaseKernel(__cu2cl_Kernel_device_add);
+    clReleaseProgram(__cu2cl_Program_vectorAdd_cu);
+}
 void __cu2cl_Init_vectorAdd_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("vectorAdd_cu_cl.aocx", &progSrc);
     __cu2cl_Program_vectorAdd_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for vectorAdd.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("vectorAdd.cu-cl.cl", &progSrc);
     __cu2cl_Program_vectorAdd_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,26 +51,9 @@ void __cu2cl_Init_vectorAdd_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_device_add = clCreateKernel(__cu2cl_Program_vectorAdd_cu, "device_add", &err);
-    /*printf("__cu2cl_Kernel_device_add creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: device_add*/
+    /*printf("__cu2cl_Kernel_device_add creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: device_add*/
 }
 
-cl_kernel __cu2cl_Kernel_device_add;
-cl_program __cu2cl_Program_vectorAdd_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_vectorAdd_cu() {
-    clReleaseKernel(__cu2cl_Kernel_device_add);
-    clReleaseProgram(__cu2cl_Program_vectorAdd_cu);
-}
 #include <stdio.h>
 # define N 512
 
@@ -94,11 +94,11 @@ __cu2cl_Init();
 cl_mem d_b;
 cl_mem d_c;
 	*(void **)&d_a = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, size, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **)&d_a is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **)&d_a: %s\n", getErrorString(err));
 	*(void **)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, size, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **)&d_b is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **)&d_b: %s\n", getErrorString(err));
 	*(void **)&d_c = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, size, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **)&d_c is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **)&d_c: %s\n", getErrorString(err));
 
 
 	err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_a, CL_TRUE, 0, size, a, 0, NULL, NULL);
@@ -108,11 +108,11 @@ cl_mem d_c;
 
 
 	err = clSetKernelArg(__cu2cl_Kernel_device_add, 0, sizeof(cl_mem), &d_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_device_add is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_device_add: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_device_add, 1, sizeof(cl_mem), &d_b);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_device_add is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_device_add: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_device_add, 2, sizeof(cl_mem), &d_c);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_device_add is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_device_add: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = N/2;
 globalWorkSize[0] = (2)*localWorkSize[0];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_device_add, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);

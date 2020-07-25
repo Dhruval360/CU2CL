@@ -25,7 +25,6 @@ size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
 cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end);
 
-
 const char *getErrorString(cl_int error);
 
 void __cu2cl_Init_BoxBlur_TotalVariation_cu();

@@ -11,11 +11,33 @@
 
 
 
+cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
+cl_program __cu2cl_Program_grayscale_cu;
 cl_int err;
+extern cl_kernel __cu2cl_Kernel_sobelGpu;
+extern cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
+extern cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
+extern cl_program __cu2cl_Util_Program;
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_grayscale_cu() {
+    clReleaseKernel(__cu2cl_Kernel_rgba_to_greyscale);
+    clReleaseProgram(__cu2cl_Program_grayscale_cu);
+}
 void __cu2cl_Init_grayscale_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("grayscale_cu_cl.aocx", &progSrc);
     __cu2cl_Program_grayscale_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for grayscale.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("grayscale.cu-cl.cl", &progSrc);
     __cu2cl_Program_grayscale_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,30 +56,9 @@ void __cu2cl_Init_grayscale_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_rgba_to_greyscale = clCreateKernel(__cu2cl_Program_grayscale_cu, "rgba_to_greyscale", &err);
-    /*printf("__cu2cl_Kernel_rgba_to_greyscale creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: rgba_to_greyscale*/
+    /*printf("__cu2cl_Kernel_rgba_to_greyscale creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: rgba_to_greyscale*/
 }
 
-cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
-cl_program __cu2cl_Program_grayscale_cu;
-extern cl_kernel __cu2cl_Kernel_sobelGpu;
-extern cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
-extern cl_program __cu2cl_Util_Program;
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_grayscale_cu() {
-    clReleaseKernel(__cu2cl_Kernel_rgba_to_greyscale);
-    clReleaseProgram(__cu2cl_Program_grayscale_cu);
-}
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -114,10 +115,10 @@ void preProcess(uchar4 **inputImage, unsigned char **greyImage,
   //allocate memory on the device for both input and output
 /*CU2CL Note -- Rewriting single decl*/
   *d_rgbaImage = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * numPixels, NULL, &err);
-//printf("clCreateBuffer for device variable *d_rgbaImage is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *d_rgbaImage: %s\n", getErrorString(err));
 /*CU2CL Note -- Rewriting single decl*/
   *d_greyImage = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * numPixels, NULL, &err);
-//printf("clCreateBuffer for device variable *d_greyImage is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *d_greyImage: %s\n", getErrorString(err));
   __cu2cl_Memset(*d_greyImage, 0, numPixels * sizeof(unsigned char)); //make sure no memory is left laying around
 
   //copy input array to the GPU
@@ -153,13 +154,13 @@ void your_rgba_to_greyscale(const uchar4 * const h_rgbaImage, uchar4 * const d_r
   const size_t gridSize[3] = {ceil(numRows / (float)thread), ceil(numCols / (float)thread), 1};
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
   err = clSetKernelArg(__cu2cl_Kernel_rgba_to_greyscale, 0, sizeof(const uchar4 *), &d_rgbaImage);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_rgba_to_greyscale is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_rgba_to_greyscale: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_rgba_to_greyscale, 1, sizeof(unsigned char *), &d_greyImage);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_rgba_to_greyscale is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_rgba_to_greyscale: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_rgba_to_greyscale, 2, sizeof(int), &numRows);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_rgba_to_greyscale is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_rgba_to_greyscale: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_rgba_to_greyscale, 3, sizeof(int), &numCols);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_rgba_to_greyscale is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_rgba_to_greyscale: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = blockSize[0];
 localWorkSize[1] = blockSize[1];
 localWorkSize[2] = blockSize[2];

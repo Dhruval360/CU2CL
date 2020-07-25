@@ -5,7 +5,7 @@
 
 
 
-using namespace cv;
+
 
 // I learnt about vector notaion in c++ and now know that uchar4* is a 2D array of 4 element vectors of unsigned char type.  
 

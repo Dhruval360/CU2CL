@@ -15,11 +15,32 @@ cl_mem __cu2cl_Mem_h_c;
 cl_mem __cu2cl_Mem_h_cc;
 
 
+cl_kernel __cu2cl_Kernel_gpu_matrix_mult;
+cl_kernel __cu2cl_Kernel_gpu_square_matrix_mult;
+cl_kernel __cu2cl_Kernel_gpu_matrix_transpose;
+cl_program __cu2cl_Program_MatrixMul_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_MatrixMul_cu() {
+    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_mult);
+    clReleaseKernel(__cu2cl_Kernel_gpu_square_matrix_mult);
+    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_transpose);
+    clReleaseProgram(__cu2cl_Program_MatrixMul_cu);
+}
 void __cu2cl_Init_MatrixMul_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("MatrixMul_cu_cl.aocx", &progSrc);
     __cu2cl_Program_MatrixMul_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for MatrixMul.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("MatrixMul.cu-cl.cl", &progSrc);
     __cu2cl_Program_MatrixMul_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -38,36 +59,13 @@ void __cu2cl_Init_MatrixMul_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_gpu_matrix_mult = clCreateKernel(__cu2cl_Program_MatrixMul_cu, "gpu_matrix_mult", &err);
-    /*printf("__cu2cl_Kernel_gpu_matrix_mult creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_matrix_mult*/
+    /*printf("__cu2cl_Kernel_gpu_matrix_mult creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_matrix_mult*/
     __cu2cl_Kernel_gpu_square_matrix_mult = clCreateKernel(__cu2cl_Program_MatrixMul_cu, "gpu_square_matrix_mult", &err);
-    /*printf("__cu2cl_Kernel_gpu_square_matrix_mult creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_square_matrix_mult*/
+    /*printf("__cu2cl_Kernel_gpu_square_matrix_mult creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_square_matrix_mult*/
     __cu2cl_Kernel_gpu_matrix_transpose = clCreateKernel(__cu2cl_Program_MatrixMul_cu, "gpu_matrix_transpose", &err);
-    /*printf("__cu2cl_Kernel_gpu_matrix_transpose creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_matrix_transpose*/
+    /*printf("__cu2cl_Kernel_gpu_matrix_transpose creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: gpu_matrix_transpose*/
 }
 
-cl_kernel __cu2cl_Kernel_gpu_matrix_mult;
-cl_kernel __cu2cl_Kernel_gpu_square_matrix_mult;
-cl_kernel __cu2cl_Kernel_gpu_matrix_transpose;
-cl_program __cu2cl_Program_MatrixMul_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_MatrixMul_cu() {
-    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_mult);
-    clReleaseKernel(__cu2cl_Kernel_gpu_square_matrix_mult);
-    clReleaseKernel(__cu2cl_Kernel_gpu_matrix_transpose);
-    clReleaseProgram(__cu2cl_Program_MatrixMul_cu);
-}
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -199,8 +197,10 @@ __cu2cl_Init();
 
     // some events to count the execution time
     cl_event start, stop;
-    start;
-    stop;
+    start = clCreateUserEvent(__cu2cl_Context, &err);
+//printf("clCreateUserEvent for the event start: %s\n", getErrorString(err));
+    stop = clCreateUserEvent(__cu2cl_Context, &err);
+//printf("clCreateUserEvent for the event stop: %s\n", getErrorString(err));
 
     // start to count execution time of GPU version
     err = clEnqueueMarker(__cu2cl_CommandQueue, &start);
@@ -210,11 +210,11 @@ __cu2cl_Init();
 cl_mem d_b;
 cl_mem d_c;
     *(void **) &d_a = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(int)*m*n, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **) &d_a is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **) &d_a: %s\n", getErrorString(err));
     *(void **) &d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(int)*n*k, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **) &d_b is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **) &d_b: %s\n", getErrorString(err));
     *(void **) &d_c = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(int)*m*k, NULL, &err);
-//printf("clCreateBuffer for device variable *(void **) &d_c is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void **) &d_c: %s\n", getErrorString(err));
 
     // copy matrix A and B from host to device memory
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_a, CL_TRUE, 0, sizeof(int)*m*n, h_a, 0, NULL, NULL);
@@ -231,13 +231,13 @@ cl_mem d_c;
     if(m == n && n == k)
     {
         err = clSetKernelArg(__cu2cl_Kernel_gpu_square_matrix_mult, 0, sizeof(cl_mem), &d_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_gpu_square_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_gpu_square_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_square_matrix_mult, 1, sizeof(cl_mem), &d_b);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_gpu_square_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_gpu_square_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_square_matrix_mult, 2, sizeof(cl_mem), &d_c);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_gpu_square_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_gpu_square_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_square_matrix_mult, 3, sizeof(int), &n);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_gpu_square_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_gpu_square_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = dimBlock[0];
 localWorkSize[1] = dimBlock[1];
 localWorkSize[2] = dimBlock[2];
@@ -250,17 +250,17 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_gpu_square_mat
     else
     {
         err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 0, sizeof(cl_mem), &d_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 1, sizeof(cl_mem), &d_b);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 2, sizeof(cl_mem), &d_c);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 3, sizeof(int), &m);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 4, sizeof(int), &n);
-/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_gpu_matrix_mult, 5, sizeof(int), &k);
-/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_gpu_matrix_mult is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 5 of kernel __cu2cl_Kernel_gpu_matrix_mult: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = dimBlock[0];
 localWorkSize[1] = dimBlock[1];
 localWorkSize[2] = dimBlock[2];

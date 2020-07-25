@@ -11,11 +11,30 @@
 
 
 
+cl_kernel __cu2cl_Kernel_knapsackGPU;
+cl_kernel __cu2cl_Kernel_knapsackGPU2;
+cl_program __cu2cl_Program_knapsack_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_knapsack_cu() {
+    clReleaseKernel(__cu2cl_Kernel_knapsackGPU);
+    clReleaseKernel(__cu2cl_Kernel_knapsackGPU2);
+    clReleaseProgram(__cu2cl_Program_knapsack_cu);
+}
 void __cu2cl_Init_knapsack_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("knapsack_cu_cl.aocx", &progSrc);
     __cu2cl_Program_knapsack_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for knapsack.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("knapsack.cu-cl.cl", &progSrc);
     __cu2cl_Program_knapsack_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,31 +53,11 @@ void __cu2cl_Init_knapsack_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_knapsackGPU = clCreateKernel(__cu2cl_Program_knapsack_cu, "knapsackGPU", &err);
-    /*printf("__cu2cl_Kernel_knapsackGPU creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: knapsackGPU*/
+    /*printf("__cu2cl_Kernel_knapsackGPU creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: knapsackGPU*/
     __cu2cl_Kernel_knapsackGPU2 = clCreateKernel(__cu2cl_Program_knapsack_cu, "knapsackGPU2", &err);
-    /*printf("__cu2cl_Kernel_knapsackGPU2 creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: knapsackGPU2*/
+    /*printf("__cu2cl_Kernel_knapsackGPU2 creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: knapsackGPU2*/
 }
 
-cl_kernel __cu2cl_Kernel_knapsackGPU;
-cl_kernel __cu2cl_Kernel_knapsackGPU2;
-cl_program __cu2cl_Program_knapsack_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_knapsack_cu() {
-    clReleaseKernel(__cu2cl_Kernel_knapsackGPU);
-    clReleaseKernel(__cu2cl_Kernel_knapsackGPU2);
-    clReleaseProgram(__cu2cl_Program_knapsack_cu);
-}
 #include<time.h>
 #include <stdio.h>
 #include<iostream>
@@ -153,12 +152,12 @@ __cu2cl_Init();
 	cl_mem d_value;
 cl_mem d_weight;
 	*(void**)&d_value = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, n * sizeof(int), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_value is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_value: %s\n", getErrorString(err));
 	*(void**)&d_weight = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, n * sizeof(int), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_weight is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_weight: %s\n", getErrorString(err));
 	cl_mem dp;
 	*(void**)&dp = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, (n + 1) * (capacity + 1) * sizeof(int), NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&dp is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&dp: %s\n", getErrorString(err));
 
 	err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_value, CL_TRUE, 0, (n) * sizeof(int), val, 0, NULL, NULL);
 //printf("Memory copy from host variable val to device variable d_value: %s\n", getErrorString(err));
@@ -183,15 +182,15 @@ cl_mem d_weight;
 
 	start = clock();
 	err = clSetKernelArg(__cu2cl_Kernel_knapsackGPU2, 0, sizeof(cl_mem), &dp);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_knapsackGPU2 is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_knapsackGPU2: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_knapsackGPU2, 1, sizeof(cl_mem), &d_value);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_knapsackGPU2 is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_knapsackGPU2: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_knapsackGPU2, 2, sizeof(cl_mem), &d_weight);
-/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_knapsackGPU2 is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 2 of kernel __cu2cl_Kernel_knapsackGPU2: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_knapsackGPU2, 3, sizeof(int), &capacity);
-/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_knapsackGPU2 is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 3 of kernel __cu2cl_Kernel_knapsackGPU2: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_knapsackGPU2, 4, sizeof(int), &n);
-/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_knapsackGPU2 is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 4 of kernel __cu2cl_Kernel_knapsackGPU2: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = thread;
 globalWorkSize[0] = (block)*localWorkSize[0];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_knapsackGPU2, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);

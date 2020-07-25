@@ -11,11 +11,39 @@
 
 
 
+cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
+cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
+cl_program __cu2cl_Program_redEYECPU_cu;
 cl_int err;
+extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
+extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
+extern cl_kernel __cu2cl_Kernel_histogram_kernel;
+extern cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
+extern cl_kernel __cu2cl_Kernel_move_kernel;
+extern cl_program __cu2cl_Program_redEyeGPU_cu;
+extern cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
+extern cl_program __cu2cl_Util_Program;
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_redEYECPU_cu() {
+    clReleaseKernel(__cu2cl_Kernel_naive_normalized_cross_correlation);
+    clReleaseKernel(__cu2cl_Kernel_remove_redness_from_coordinates);
+    clReleaseProgram(__cu2cl_Program_redEYECPU_cu);
+}
 void __cu2cl_Init_redEYECPU_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("redEYECPU_cu_cl.aocx", &progSrc);
     __cu2cl_Program_redEYECPU_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for redEYECPU.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("redEYECPU.cu-cl.cl", &progSrc);
     __cu2cl_Program_redEYECPU_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,39 +62,11 @@ void __cu2cl_Init_redEYECPU_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_naive_normalized_cross_correlation = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "naive_normalized_cross_correlation", &err);
-    /*printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation*/
+    /*printf("__cu2cl_Kernel_naive_normalized_cross_correlation creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: naive_normalized_cross_correlation*/
     __cu2cl_Kernel_remove_redness_from_coordinates = clCreateKernel(__cu2cl_Program_redEYECPU_cu, "remove_redness_from_coordinates", &err);
-    /*printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates*/
+    /*printf("__cu2cl_Kernel_remove_redness_from_coordinates creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: remove_redness_from_coordinates*/
 }
 
-cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
-cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
-cl_program __cu2cl_Program_redEYECPU_cu;
-extern cl_kernel __cu2cl_Kernel_naive_normalized_cross_correlation;
-extern cl_kernel __cu2cl_Kernel_remove_redness_from_coordinates;
-extern cl_kernel __cu2cl_Kernel_histogram_kernel;
-extern cl_kernel __cu2cl_Kernel_exclusive_scan_kernel;
-extern cl_kernel __cu2cl_Kernel_move_kernel;
-extern cl_program __cu2cl_Program_redEyeGPU_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_kernel __cu2cl_Kernel___cu2cl_Memset;
-extern cl_program __cu2cl_Util_Program;
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_redEYECPU_cu() {
-    clReleaseKernel(__cu2cl_Kernel_naive_normalized_cross_correlation);
-    clReleaseKernel(__cu2cl_Kernel_remove_redness_from_coordinates);
-    clReleaseProgram(__cu2cl_Program_redEYECPU_cu);
-}
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -304,13 +304,13 @@ cl_mem d_g;
     cl_mem d_op_r;
 
     *(void**)&d_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_r is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_r: %s\n", getErrorString(err));
     *(void**)&d_op_r = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_op_r is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_op_r: %s\n", getErrorString(err));
     *(void**)&d_g = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_g is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_g: %s\n", getErrorString(err));
     *(void**)&d_b = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_b is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_b: %s\n", getErrorString(err));
     for (size_t i = 0; i < numRowsImg * numColsImg; ++i)
     {
         r[i] = (inImg[i].x);
@@ -342,11 +342,11 @@ cl_mem d_bt;
 cl_mem d_gt;
 
     *(void**)&d_rt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_rt is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_rt: %s\n", getErrorString(err));
     *(void**)&d_gt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_gt is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_gt: %s\n", getErrorString(err));
     *(void**)&d_bt = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar) * templateSize, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_bt is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_bt: %s\n", getErrorString(err));
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_rt, CL_TRUE, 0, sizeof(uchar) * templateSize, r, 0, NULL, NULL);
 //printf("Memory copy from host variable r to device variable d_rt: %s\n", getErrorString(err));
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_bt, CL_TRUE, 0, sizeof(uchar) * templateSize, b, 0, NULL, NULL);
@@ -385,13 +385,13 @@ cl_mem d_gt;
     //now compute the cross-correlations for each channel
     cl_mem red_data;
     *(void**)&red_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&red_data is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&red_data: %s\n", getErrorString(err));
     cl_mem blue_data;
     *(void**)&blue_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&blue_data is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&blue_data: %s\n", getErrorString(err));
     cl_mem green_data;
     *(void**)&green_data = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(float) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&green_data is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&green_data: %s\n", getErrorString(err));
 
     naive_normalized_cross_correlation << <gridSize, blockSize >> > (red_data,
         d_r,
@@ -492,7 +492,7 @@ cl_mem d_gt;
 
     cl_mem d_outputPos;
     *(void**)&d_outputPos = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned int) * numElems, NULL, &err);
-//printf("clCreateBuffer for device variable *(void**)&d_outputPos is: %s\n", getErrorString(err));
+//printf("clCreateBuffer for device variable *(void**)&d_outputPos: %s\n", getErrorString(err));
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_outputPos, CL_TRUE, 0, sizeof(unsigned int) * numElems, outputPos, 0, NULL, NULL);
 //printf("Memory copy from host variable outputPos to device variable d_outputPos: %s\n", getErrorString(err));
 

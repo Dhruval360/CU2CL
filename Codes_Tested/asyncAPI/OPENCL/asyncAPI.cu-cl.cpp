@@ -11,11 +11,28 @@
 
 
 
+cl_kernel __cu2cl_Kernel_increment_kernel;
+cl_program __cu2cl_Program_asyncAPI_cu;
 cl_int err;
+extern const char *progSrc;
+extern size_t progLen;
+
+extern cl_platform_id __cu2cl_Platform;
+extern cl_device_id __cu2cl_Device;
+extern cl_context __cu2cl_Context;
+extern cl_command_queue __cu2cl_CommandQueue;
+
+extern size_t globalWorkSize[3];
+extern size_t localWorkSize[3];
+void __cu2cl_Cleanup_asyncAPI_cu() {
+    clReleaseKernel(__cu2cl_Kernel_increment_kernel);
+    clReleaseProgram(__cu2cl_Program_asyncAPI_cu);
+}
 void __cu2cl_Init_asyncAPI_cu() {
     #ifdef WITH_ALTERA
     progLen = __cu2cl_LoadProgramSource("asyncAPI_cu_cl.aocx", &progSrc);
     __cu2cl_Program_asyncAPI_cu = clCreateProgramWithBinary(__cu2cl_Context, 1, &__cu2cl_Device, &progLen, (const unsigned char **)&progSrc, NULL, &err);
+    //printf("clCreateProgramWithBinary for asyncAPI.cu-cl.cl: %s\n", getErrorString(err));
     #else
     progLen = __cu2cl_LoadProgramSource("asyncAPI.cu-cl.cl", &progSrc);
     __cu2cl_Program_asyncAPI_cu = clCreateProgramWithSource(__cu2cl_Context, 1, &progSrc, &progLen, &err);
@@ -34,26 +51,9 @@ void __cu2cl_Init_asyncAPI_cu() {
         printf("%s\n", &buildLog[0]);
     }
     __cu2cl_Kernel_increment_kernel = clCreateKernel(__cu2cl_Program_asyncAPI_cu, "increment_kernel", &err);
-    /*printf("__cu2cl_Kernel_increment_kernel creation: %s
-", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: increment_kernel*/
+    /*printf("__cu2cl_Kernel_increment_kernel creation: %s\n", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: increment_kernel*/
 }
 
-cl_kernel __cu2cl_Kernel_increment_kernel;
-cl_program __cu2cl_Program_asyncAPI_cu;
-extern const char *progSrc;
-extern size_t progLen;
-
-extern cl_platform_id __cu2cl_Platform;
-extern cl_device_id __cu2cl_Device;
-extern cl_context __cu2cl_Context;
-extern cl_command_queue __cu2cl_CommandQueue;
-
-extern size_t globalWorkSize[3];
-extern size_t localWorkSize[3];
-void __cu2cl_Cleanup_asyncAPI_cu() {
-    clReleaseKernel(__cu2cl_Kernel_increment_kernel);
-    clReleaseProgram(__cu2cl_Program_asyncAPI_cu);
-}
 ////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 1993-2015 NVIDIA Corporation.  All rights reserved.
@@ -152,9 +152,9 @@ __cu2cl_Init();
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
 //printf("Memory copy from host variable a to device variable d_a in stream __cu2cl_CommandQueue: %s\n", getErrorString(err));
     err = clSetKernelArg(__cu2cl_Kernel_increment_kernel, 0, sizeof(int *), &d_a);
-/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_increment_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 0 of kernel __cu2cl_Kernel_increment_kernel: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 err = clSetKernelArg(__cu2cl_Kernel_increment_kernel, 1, sizeof(int), &value);
-/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_increment_kernel is: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
+/*printf("clSetKernelArg for argument 1 of kernel __cu2cl_Kernel_increment_kernel: %s\n", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/
 localWorkSize[0] = threads[0];
 localWorkSize[1] = threads[1];
 localWorkSize[2] = threads[2];
@@ -163,7 +163,7 @@ globalWorkSize[1] = blocks[1]*localWorkSize[1];
 globalWorkSize[2] = blocks[2]*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_increment_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_increment_kernel: %s\n", getErrorString(err));
-    err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
+    clEnqueueReadBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
 //printf("Memory copy from device variable a to host variable d_a in stream __cu2cl_CommandQueue: %s\n", getErrorString(err));
     err = clEnqueueMarker(__cu2cl_CommandQueue, &stop);
 //printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
