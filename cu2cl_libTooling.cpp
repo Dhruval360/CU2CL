@@ -506,7 +506,7 @@ std::string CU2CLClean;
 std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
 
 
-int temp_count = 0;
+int temp_count = 0; // This has been added to count the number of times a kernel call has an argument like dim3(x,y,z) without a previous declaration of the same
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
@@ -1505,6 +1505,8 @@ private:
             else {
                 var = dyn_cast<VarDecl>(dr->getDecl());
             }
+            
+            newSize = vector_check_and_convert(newSize);
 
             //Replace with clCreateBuffer
             newDevPtr = newDevPtr[0] == '&' ? newDevPtr.substr(1) : ("*" + newDevPtr) ; // To prevent the occurence of "*&variable_name"
@@ -1568,6 +1570,8 @@ private:
             RewriteHostExpr(src, newSrc);
             RewriteHostExpr(count, newCount);
 
+            newCount = vector_check_and_convert(newCount);
+
             DeclRefExpr *dr = FindStmt<DeclRefExpr>(kind);
             EnumConstantDecl *enumConst = dyn_cast<EnumConstantDecl>(dr->getDecl());
             std::string enumString = enumConst->getNameAsString();
@@ -1613,6 +1617,9 @@ private:
             RewriteHostExpr(src, newSrc);
             RewriteHostExpr(count, newCount);
             RewriteHostExpr(stream, newStream);
+
+            newCount = vector_check_and_convert(newCount);
+
             if (newStream == "0")
                 newStream = "__cu2cl_CommandQueue";
 
@@ -3639,6 +3646,22 @@ private:
         }
         delete regex;
         return ret;
+    }
+
+    //Function to change vector types inside memory operations if found
+    std::string vector_check_and_convert(std::string newSize){
+        //newSize will be of the kind sizeof(datatype) * some_number
+        size_t position = newSize.find("sizeof(");
+        if(position != std::string::npos){
+            size_t end = newSize.find(')');
+            size_t begin = position + 7;
+            std::string type = newSize.substr(begin, end-begin);
+            if(type[end-begin-1] >= '0' && type[end-begin-1] <= '9'){//Meaning the type is a vector type
+                type = RewriteVectorType(type, true);
+                newSize = newSize.substr(0,begin) + type + newSize.substr(end);
+            }
+        }
+        return newSize;
     }
 
     //The workhorse that takes the constructed replacement type and inserts it in place of the old one
