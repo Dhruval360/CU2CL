@@ -504,6 +504,9 @@ std::string CU2CLInit;
 std::string CU2CLClean;
 
 std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
+
+
+int temp_count = 0;
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
@@ -1816,7 +1819,15 @@ private:
             Expr *arg = cast->getSubExprAsWritten();
             std::string s;
             RewriteHostExpr(arg, s);
-            args << "globalWorkSize[0] = (" << s << ")*localWorkSize[0];\n";
+            if (s[1] == '=') {
+                std::string out = "size_t temp" + std::to_string(temp_count) + s + ";\n";
+                args << out;
+                for (unsigned int i = 0; i < 3; i++)
+                    args << "globalWorkSize[0] = (" << "temp" << std::to_string(temp_count) << "[" << i << "]"  << ")*localWorkSize[" << i << "];\n";
+                temp_count++;
+            }
+            else
+                args << "globalWorkSize[0] = (" << s << ")*localWorkSize[0];\n";
         }
         args << "err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, " << kernelName << ", " << dims << ", NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);\n//printf(\"clEnqueueNDRangeKernel for the kernel " + kernelName + ": %s\\n\", getErrorString(err))";
 
