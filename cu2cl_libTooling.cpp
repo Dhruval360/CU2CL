@@ -1021,6 +1021,29 @@ private:
             //TODO: Perhaps a second tier of filtering is needed
             else if (ce->getDirectCallee()->getNameAsString().find("cu") == 0)
                 return RewriteCUDACall(ce, newExpr);
+           
+            std::string funcName = ce->getDirectCallee()->getNameAsString();
+            if (funcName.substr(0, 5) == "make_"){
+                if (funcName.substr(5, 8) == "longlong")
+                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n"; 
+                else if (funcName.substr(5, 9) == "ulonglong")
+                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by ulong*/\n";
+                
+                newExpr += "{";                
+                int num_arguments = funcName[funcName.length() - 1] - '0';
+                Expr* x; std::string newX;
+                for (int i = 0; i < (num_arguments - 1); i++){
+                    x = ce->getArg(i);
+                    newX = "";
+                    RewriteKernelExpr(x, newX);
+                    newExpr += newX + ",";
+                }
+                x = ce->getArg(num_arguments - 1);
+                newX = "";
+                RewriteKernelExpr(x, newX);
+                newExpr += newX + "}";
+                return true;
+            }
         }
         //Catches expressions which refer to the member of a struct or class
         // in the CUDA case these are primarily just dim3s and cudaDeviceProp
@@ -2203,26 +2226,21 @@ private:
             if (funcName == "__syncthreads") {
                 newExpr = "barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE)";
             }
-            else if (funcName.substr(0, 5) == "make_")
-            {
-                if (funcName.substr(5, 8) == "longlong")
-                {
+            else if (funcName.substr(0, 5) == "make_"){
+                if (funcName.substr(5, 8) == "longlong"){
                     newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n";
                     newExpr += "(long)(";
                 }
-                else if (funcName.substr(5, 9) == "ulonglong")
-                {
+                else if (funcName.substr(5, 9) == "ulonglong"){
                     newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by ulong*/\n";
                     newExpr += "(ulong)(";
                 }
-                else
-                {
+                else{
                     newExpr = "(" + funcName.substr(5) + ")(";
                 }
                 int num_arguments = funcName[funcName.length() - 1] - '0';
                 Expr* x; std::string newX;
-                for (int i = 0; i < (num_arguments - 1); i++)
-                {
+                for (int i = 0; i < (num_arguments - 1); i++){
                     x = ce->getArg(i);
                     newX = "";
                     RewriteKernelExpr(x, newX);
