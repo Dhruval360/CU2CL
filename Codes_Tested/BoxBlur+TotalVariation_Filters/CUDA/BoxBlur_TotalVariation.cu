@@ -165,10 +165,10 @@ int main()
 		exit(1);
 	}
 
-	char output_file[] = "Images set 1/Blurred_GPU.jpg";
-	char output_file2[] = "Images set 1/TotalVariationFilter_GPU.jpg";
-	char output_file3[] = "Images set 1/Blurred_CPU.jpg";
-	char output_file4[] = "Images set 1/TotalVariationFilter_CPU.jpg";
+	char output_file[] = "1/Blurred_GPU.jpg";
+	char output_file2[] = "1/TotalVariationFilter_GPU.jpg";
+	char output_file3[] = "1/Blurred_CPU.jpg";
+	char output_file4[] = "1/TotalVariationFilter_CPU.jpg";
 
 	int filterWidth = 9; // For the box blur
 	int divFactor = filterWidth * filterWidth; // For dividing the sum of neighbouring pixel values after summation for the box filter for normalization
