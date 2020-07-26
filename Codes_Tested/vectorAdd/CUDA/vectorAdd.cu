@@ -2,7 +2,7 @@
 # define N 512
 
 
-void fill_array(int *data)
+void fill_array(int *data,float4* e)
 {
 	for(int i=0;i<N;i++)
 		data[i]=i;
@@ -33,8 +33,13 @@ int main(void)
 	a= (int*)malloc(size);
 	b= (int*)malloc(size);
 	c= (int*)malloc(size);
-	fill_array(a);
-	fill_array(b);
+	uchar4* e;
+	fill_array(a,e);
+	fill_array(b,e);
+	uchar4* d= new double4[59];
+	
+
+	uchar4* f = (int4*)malloc(sizeof(char4));
 
 	int *d_a,*d_b,*d_c;
 	cudaMalloc((void **)&d_a, size);

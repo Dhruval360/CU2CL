@@ -441,6 +441,7 @@ bool AddInlineComments = true; //defaults to ON, turn off with '--inline-comment
 std::string ExtraBuildArgs; //defaults to "", add more with '--cl-build-args="<args>"'
 bool FilterKernelName = false; //defaults to OFF, turn on with '--rename-kernel-files' or '--rename-kernel-files=true'
 
+bool mem2D = false;
 bool UseGCCPaths = false; //defaults to OFF, turn on with '--import-gcc-paths'
 //We borrow the OutputFile data structure from Clang's CompilerInstance.h
 // So that we can use it to store output streams and emulate their temp
@@ -510,7 +511,7 @@ int temp_count = 0;
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
-    if(!OF->TempFilename.empty()) {
+    if (!OF->TempFilename.empty()) {
         SmallString<128> NewOutFile(OF->Filename);
         FM->FixupRelativePath(NewOutFile);
         if (llvm::error_code ec = llvm::sys::fs::rename(OF->TempFilename, NewOutFile.str()))
@@ -704,7 +705,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     std::stringstream inlineStr;
     std::stringstream errStr;
     inlineStr << "/*";
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //Tack the source line information onto the diagnostic
         //inlineStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
         errStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
@@ -719,7 +720,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     inlineStr << inline_note << "*/\n";
     errStr << err_note << "\n";
 
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //print the inline string(s) to the output file
         bool isValid;
         //Buffer the comment for outputing after translation is finished.
@@ -1102,6 +1103,7 @@ private:
                 QualType qt = tl.getType();
                 std::string type = qt.getAsString();
 
+
                 if (type == "dim3" || type == "const dim3") {
                     RewriteType(tl, "size_t[3]", exprRewriter);
                 }
@@ -1358,7 +1360,7 @@ private:
             std::string newEvent;
             RewriteHostExpr(event, newEvent);
             newEvent = newEvent[0] == '&' ? newEvent.substr(1) : ('*' + newEvent);
-            newExpr = newEvent + " = clCreateUserEvent(__cu2cl_Context, &err);\n//printf(\"clCreateUserEvent for the event " + newEvent + ": %s\\n\", getErrorString(err))" ; 
+            newExpr = newEvent + " = clCreateUserEvent(__cu2cl_Context, &err);\n//printf(\"clCreateUserEvent for the event " + newEvent + ": %s\\n\", getErrorString(err))" ;
         }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
@@ -1460,6 +1462,10 @@ private:
                 //Add var to HostMemVars
                 HostMemVars.insert(var);
             }
+        }
+        else if (funcName == "cudaGetLastError")
+        {
+            newExpr = "getErrorString(err)";
         }
         else if (funcName == "cudaFree") {
             Expr *devPtr = cudaCall->getArg(0);
@@ -1598,6 +1604,74 @@ private:
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
             }
         }
+        else if (funcName == "cudaMemcpy2D") {
+
+            //  const size_t * buffer_origin,
+            // const size_t * host_origin,
+            // const size_t *region,
+            // size_t buffer_row_pitch,
+            // size_t buffer_slice_pitch,
+            // size_t host_row_pitch,
+            // size_t host_slice_pitch
+
+
+            //Inspect kind of memcpy2D and rewrite accordingly
+            Expr *dst = cudaCall->getArg(0);
+            Expr *src = cudaCall->getArg(2);
+            Expr *dpitch = cudaCall->getArg(1);
+            Expr *spitch = cudaCall->getArg(3);
+            Expr *width = cudaCall->getArg(4);
+            Expr *height = cudaCall->getArg(5);
+            Expr *kind = cudaCall->getArg(6);
+            std::string newDst, newSrc, dPitch, sPitch, Width, Height;
+            RewriteHostExpr(dst, newDst);
+            RewriteHostExpr(src, newSrc);
+            RewriteHostExpr(dpitch, dPitch);
+            RewriteHostExpr(spitch, sPitch);
+            RewriteHostExpr(width, Width);
+            RewriteHostExpr(height, Height);
+
+            DeclRefExpr *dr = FindStmt<DeclRefExpr>(kind);
+            EnumConstantDecl *enumConst = dyn_cast<EnumConstantDecl>(dr->getDecl());
+            std::string enumString = enumConst->getNameAsString();
+
+            if (mem2D == false)
+            {
+                newExpr = "size_t a[3] = {0,0,0};\nsize_t d[3] = {" + Width + "," + Height + ",1};\n";
+                mem2D = true;
+            }
+            else
+            {
+                newExpr = "d[3] = {" + Width + "," + Height + ",1};\n";
+            }
+
+            if (enumString == "cudaMemcpyHostToHost") {
+                //standard memcpy
+                //Make sure to include <string.h>
+                if (!IncludingStringH) {
+                    HostIncludes += "#include <string.h>\n";
+                    IncludingStringH = true;
+                }
+
+                // need to be width*height, the net size
+                newExpr = "memcpy(" + newDst + ", " + newSrc + ", " + Width + ")";
+            }
+            else if (enumString == "cudaMemcpyHostToDevice") {
+                //clEnqueueWriteBuffer
+                newExpr += "err = clEnqueueWriteBufferRect(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE, a, a, d , 0, 0, 0, 0, " + newSrc + ", 0, NULL, NULL);\n//printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+            }
+            else if (enumString == "cudaMemcpyDeviceToHost") {
+                //clEnqueueReadBuffer
+                newExpr += "err = clEnqueueReadBufferRect(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE, a, a, d , 0, 0, 0, 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
+            }
+            else if (enumString == "cudaMemcpyDeviceToDevice") {
+                //clEnqueueCopyBuffer
+                newExpr += "err = clEnqueueCopyBufferRect(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", a, a, d, 0, 0, 0, 0, 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+            }
+            else {
+                emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
+            }
+        }
         //TODO: support cudaMemcpyDefault
         //TODO support offsets (will need to grab pointer out of cudaMemcpy
         // call, then separate off the rest of the math as the offset)
@@ -1659,7 +1733,7 @@ private:
         //FIXME: Generate cu2cl_util.cl and the requisite boilerplate
         else if (funcName == "cudaMemset") {
             if (!UsesCUDAMemset) {
-                if(!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
+                if (!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
                 GlobalCFuncs.push_back(CL_MEMSET);
                 GlobalHDecls.push_back(CL_MEMSET_H);
                 GlobalCLFuncs.push_back(CL_MEMSET_KERNEL);
@@ -1877,6 +1951,7 @@ private:
         }
         QualType qt = tl.getType();
         std::string type = qt.getAsString();
+        std::cout << type << " IS TYPE NOW\n";
 
         //Rewrite var type
         if (LastLoc.isNull() || origTL.getBeginLoc() != LastLoc.getBeginLoc()) {
@@ -2053,7 +2128,7 @@ private:
         std::string type = qt.getAsString();
 
         //if it's a vector type, it must be checked for a rewrite
-        std::string newType = RewriteVectorType(type, false);
+        std::string newType = RewriteVectorType(type, true);
         if (newType != "") {
             RewriteType(tl, newType, KernReplace, rewriteOffset);
         }
@@ -3550,7 +3625,7 @@ private:
                 RewriteType(tl, "size_t", KernReplace);
             }
             else {
-                std::string newType = RewriteVectorType(type, false);
+                std::string newType = RewriteVectorType(type, true);
                 if (newType != "")
                     RewriteType(tl, newType, KernReplace);
             }
@@ -3924,7 +3999,7 @@ public:
         GlobalCDecls[mainFilename].empty();
         //TODO consider making this default
         // we will almost always need to load a kernel file
-        if(!UsesCU2CLLoadSrc) {
+        if (!UsesCU2CLLoadSrc) {
             GlobalCFuncs.push_back(LOAD_PROGRAM_SOURCE);
             GlobalHDecls.push_back(LOAD_PROGRAM_SOURCE_H);
             UsesCU2CLLoadSrc = true;
@@ -4020,7 +4095,7 @@ public:
             //Handles globally defined C or C++ functions
             if (fd) {
                 //Don't translate explicit template specializations
-                if(fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
+                if (fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
                     if (fd->hasAttr<CUDAGlobalAttr>() || fd->hasAttr<CUDADeviceAttr>()) {
                         //Device function, so rewrite kernel
                         RewriteKernelFunction(fd);
@@ -4395,7 +4470,7 @@ public:
         std::stringstream ss(Add);
         std::string item;
         //Tokenize based on a space character delimiter
-        while(std::getline(ss, item, ' ')) {
+        while (std::getline(ss, item, ' ')) {
             AddV.push_back(item);
         }
     }
@@ -4538,7 +4613,7 @@ void replaceVarDecl(DeclaratorDecl *decl, SourceTuple * ST) {
 bool isAncestor(Stmt * ancestor, Stmt * child) {
     if (ancestor == child) return true;
     //else if (ancestor->child_begin() != ancestor->child_end()) {
-    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++){
+    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++) {
         if (isAncestor(*citr, child)) return true;
     }
     return false;
@@ -4608,7 +4683,7 @@ int main(int argc, const char ** argv) {
 
     //After the tools run, we can finalize the global boilerplate
     //If __cu2cl_setDevice is used, we need to initialize the scan variables
-    if(UsesCUDASetDevice) {
+    if (UsesCUDASetDevice) {
         CU2CLInit += "    __cu2cl_AllDevices_size = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices_curr_idx = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices = NULL;\n";
