@@ -3633,9 +3633,11 @@ private:
             prepend = "cl_";
         if (type[0] == 'u')
             prepend += "u";
+        /*
         if (size == '3') //Only necessary when supporting OpenCL 1.0, otherwise 3 member vectors are supported
             append = '4';
-        else if (size != '1')
+        */
+        /*else*/ if (size != '1')
             append = size;
 
         llvm::Regex *regex = new llvm::Regex("^u?char[1-4]$");
@@ -3671,7 +3673,7 @@ private:
         //newSize will be of the kind sizeof(datatype) * some_number
         size_t position = newSize.find("sizeof(");
         if(position != std::string::npos){
-            size_t end = newSize.find(')');
+            size_t end = newSize.find(')', position+1);
             size_t begin = position + 7;
             std::string type = newSize.substr(begin, end-begin);
             if(type[end-begin-1] >= '0' && type[end-begin-1] <= '9'){//Meaning the type is a vector type
@@ -5130,6 +5132,60 @@ int main(int argc, const char ** argv) {
     *cu2cl_header << "\n#ifdef __cplusplus\n";
     *cu2cl_header << "}\n";
     *cu2cl_header << "#endif\n";
+ /*
+    Vector types in cude are:
+    char1, uchar1, short1, ushort1, int1, uint1, long1, ulong1, float1
+    char2, uchar2, short2, ushort2, int2, uint2, long2, ulong2, float2
+    char3, uchar3, short3, ushort3, int3, uint3, long3, ulong3, float3
+    char4, uchar4, short4, ushort4, int4, uint4, long4, ulong4, float4
+
+    longlong1, ulonglong1, double1
+    longlong2, ulonglong2, double2
+
+    longlong is not supported in openCL, hence we convert that to long
+ */   
+    *cu2cl_header << "#define char1 cl_char\n";
+    *cu2cl_header << "#define uchar1 cl_uchar\n";
+    *cu2cl_header << "#define short1 cl_short\n";
+    *cu2cl_header << "#define ushort1 cl_ushort\n";
+    *cu2cl_header << "#define int1 cl_int\n";
+    *cu2cl_header << "#define uint1 cl_uint\n";
+    *cu2cl_header << "#define long1 cl_long\n";
+    *cu2cl_header << "#define ulong1 cl_ulong\n";
+    *cu2cl_header << "#define float1 cl_float\n";
+    *cu2cl_header << "#define char2 cl_char2\n";
+    *cu2cl_header << "#define uchar2 cl_uchar2\n";
+    *cu2cl_header << "#define short2 cl_short2\n";
+    *cu2cl_header << "#define ushort2 cl_ushort2\n";
+    *cu2cl_header << "#define int2 cl_int2\n";
+    *cu2cl_header << "#define uint2 cl_uint2\n";
+    *cu2cl_header << "#define long2 cl_long2\n";
+    *cu2cl_header << "#define ulong2 cl_ulong2\n";
+    *cu2cl_header << "#define float2 cl_float2\n";
+    *cu2cl_header << "#define char3 cl_char3\n";
+    *cu2cl_header << "#define uchar3 cl_uchar3\n";
+    *cu2cl_header << "#define short3 cl_short3\n";
+    *cu2cl_header << "#define ushort3 cl_ushort3\n";
+    *cu2cl_header << "#define int3 cl_int3\n";
+    *cu2cl_header << "#define uint3 cl_uint3\n";
+    *cu2cl_header << "#define long3 cl_long3\n";
+    *cu2cl_header << "#define ulong3 cl_ulong3\n";
+    *cu2cl_header << "#define float3 cl_float3\n";
+    *cu2cl_header << "#define char4 cl_char4\n";
+    *cu2cl_header << "#define uchar4 cl_uchar4\n";
+    *cu2cl_header << "#define short4 cl_short4\n";
+    *cu2cl_header << "#define ushort4 cl_ushort4\n";
+    *cu2cl_header << "#define int4 cl_int4\n";
+    *cu2cl_header << "#define uint4 cl_uint4\n";
+    *cu2cl_header << "#define long4 cl_long4\n";
+    *cu2cl_header << "#define ulong4 cl_ulong4\n";
+    *cu2cl_header << "#define float4 cl_float4\n";
+    *cu2cl_header << "#define longlong1 cl_long\n";
+    *cu2cl_header << "#define ulonglong1 cl_ulong\n";
+    *cu2cl_header << "#define double1 cl_double\n";
+    *cu2cl_header << "#define longlong2 cl_long2\n";
+    *cu2cl_header << "#define ulonglong2 cl_ulong2\n";
+    *cu2cl_header << "#define double2 cl_double2\n";
 
     //Add standard boilerplate to the header
     cu2cl_util->flush();
