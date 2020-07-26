@@ -159,7 +159,7 @@ __cu2cl_Init();
 	int divFactor = filterWidth * filterWidth; // For dividing the sum of neighbouring pixel values after summation for the box filter for normalization
 
 	// For all the variable names I have used the convention I learnt from the udacity course that h_ represents host (CPU) variable and d_ represents device (GPU) variable
-	cl_uchar4 *h_inputImageRGBA;
+	uchar4 *h_inputImageRGBA;
 cl_mem d_inputImageRGBA;
 	cv::Mat inputImageRGBA;
 
@@ -223,7 +223,7 @@ cl_mem d_bluelight;
 	outputImageRGBA.create(rows, cols, CV_8UC4);
 	outputImageRGBA2.create(rows, cols, CV_8UC4);
 
-	h_inputImageRGBA = (cl_uchar4*)inputImageRGBA.ptr<unsigned char>(0);
+	h_inputImageRGBA = (uchar4*)inputImageRGBA.ptr<unsigned char>(0);
 
 	cl_event start, stop;
 	start = clCreateUserEvent(__cu2cl_Context, &err);
@@ -237,15 +237,15 @@ cl_mem d_bluelight;
 	cl_command_queue s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
 	s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s1 is: %s\n", getErrorString(err)); 
-        s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	s2 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s2 is: %s\n", getErrorString(err)); 
-        s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	s3 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s3 is: %s\n", getErrorString(err));
 	s4 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s4 is: %s\n", getErrorString(err)); 
-        s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	s5 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s5 is: %s\n", getErrorString(err)); 
-        s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
+	s6 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
 //printf("clCreateCommandQueue for stream s6 is: %s\n", getErrorString(err));
 
 	// Allotting memory for splitting the image into its different channels in GPU

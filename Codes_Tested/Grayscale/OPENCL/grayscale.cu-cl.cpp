@@ -111,7 +111,7 @@ void preProcess(uchar4 **inputImage, unsigned char **greyImage,
   const size_t numPixels = numRows() * numCols();
   //allocate memory on the device for both input and output
 /*CU2CL Note -- Rewriting single decl*/
-  *d_rgbaImage = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(uchar4) * numPixels, NULL, &err);
+  *d_rgbaImage = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(cl_uchar4) * numPixels, NULL, &err);
 //printf("clCreateBuffer for device variable *d_rgbaImage: %s\n", getErrorString(err));
 /*CU2CL Note -- Rewriting single decl*/
   *d_greyImage = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, sizeof(unsigned char) * numPixels, NULL, &err);
@@ -119,7 +119,7 @@ void preProcess(uchar4 **inputImage, unsigned char **greyImage,
   __cu2cl_Memset(*d_greyImage, 0, numPixels * sizeof(unsigned char)); //make sure no memory is left laying around
 
   //copy input array to the GPU
-  err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, *d_rgbaImage, CL_TRUE, 0, sizeof(uchar4) * numPixels, *inputImage, 0, NULL, NULL);
+  err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, *d_rgbaImage, CL_TRUE, 0, sizeof(cl_uchar4) * numPixels, *inputImage, 0, NULL, NULL);
 //printf("Memory copy from host variable *inputImage to device variable *d_rgbaImage: %s\n", getErrorString(err));
 
   d_rgbaImage__ = *d_rgbaImage;

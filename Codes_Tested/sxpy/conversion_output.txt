@@ -51,7 +51,7 @@ ignoring duplicate directory "/usr/include"
  /usr/include
 End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/sxpy/CUDA/sxpy.cu:29:3: CU2CL Note: Inserted temporary variable for kernel literal argument 1!
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/sxpy/CUDA/sxpy.cu Translation Time: 41 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/sxpy/CUDA/sxpy.cu Translation Time: 43 microseconds
 CU2CL DEBUG: Rejected propagation of DeclRefExpr x not matching Decl d_x
 CU2CL DEBUG: Rejected propagation of DeclRefExpr y not matching Decl d_x
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!

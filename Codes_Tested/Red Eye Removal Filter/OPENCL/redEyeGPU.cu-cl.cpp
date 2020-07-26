@@ -300,7 +300,10 @@ err = clSetKernelArg(__cu2cl_Kernel_exclusive_scan_kernel, 5, sizeof(unsigned in
 localWorkSize[0] = thread_dim[0];
 localWorkSize[1] = thread_dim[1];
 localWorkSize[2] = thread_dim[2];
-globalWorkSize[0] = ( = {1, 1, 1})*localWorkSize[0];
+size_t temp0 = {1, 1, 1};
+globalWorkSize[0] = (temp0[0])*localWorkSize[0];
+globalWorkSize[0] = (temp0[1])*localWorkSize[1];
+globalWorkSize[0] = (temp0[2])*localWorkSize[2];
 err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_exclusive_scan_kernel, 3, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL);
 //printf("clEnqueueNDRangeKernel for the kernel __cu2cl_Kernel_exclusive_scan_kernel: %s\n", getErrorString(err));
       err = clFinish(__cu2cl_CommandQueue);

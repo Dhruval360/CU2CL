@@ -1,7 +1,7 @@
 //
 // CUDA implementation of Box Filter
 //
-
+#include "opencv2/imgproc/imgproc.hpp-cl.cl"
 
 
 
@@ -13,7 +13,7 @@
 #define FILTER_WIDTH    3       
 #define FILTER_HEIGHT   3       
 
-
+using namespace std;
 
 
 

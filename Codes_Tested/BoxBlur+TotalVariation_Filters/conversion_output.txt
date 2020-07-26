@@ -127,25 +127,25 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:273:32: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:273:22: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:278:24: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:278:14: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:279:24: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:279:14: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:280:24: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:280:14: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:282:36: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:282:26: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:283:36: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:283:26: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:284:36: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:284:26: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:288:33: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:288:23: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:289:33: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:289:23: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 106 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:277:32: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:277:22: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:282:24: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:282:14: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:283:24: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:283:14: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:284:24: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:284:14: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:286:36: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:286:26: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:287:36: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:287:26: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:288:36: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:288:26: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:292:33: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:292:23: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:33: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu:293:23: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu Translation Time: 109 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/BoxBlur+TotalVariation_Filters/CUDA/BoxBlur_TotalVariation.cu.
 CU2CL DEBUG: Rejected propagation of DeclRefExpr h_inputImageRGBA not matching Decl d_inputImageRGBA

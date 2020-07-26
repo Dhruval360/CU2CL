@@ -240,8 +240,12 @@ int main()
 	cudaEventRecord(start);
 
 	cudaStream_t s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
-	cudaStreamCreate(&s1); cudaStreamCreate(&s2); cudaStreamCreate(&s3);
-	cudaStreamCreate(&s4); cudaStreamCreate(&s5); cudaStreamCreate(&s6);
+	cudaStreamCreate(&s1); 
+	cudaStreamCreate(&s2); 
+	cudaStreamCreate(&s3);
+	cudaStreamCreate(&s4); 
+	cudaStreamCreate(&s5); 
+	cudaStreamCreate(&s6);
 
 	// Allotting memory for splitting the image into its different channels in GPU
 	cudaMalloc(&d_red, sizeof(unsigned char) * totalPixels);

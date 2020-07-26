@@ -128,7 +128,7 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu Translation Time: 39 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu Translation Time: 44 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu.
 Retained 1 ASTContexts!

@@ -135,7 +135,7 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:463:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:524:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:15:1: CU2CL Untranslated: Unable to translate template function
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu Translation Time: 91 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu Translation Time: 92 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu.
 clang version 3.4 (tags/RELEASE_34/final)
@@ -256,7 +256,7 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 9!
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:51: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:40: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu Translation Time: 121 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu Translation Time: 115 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!

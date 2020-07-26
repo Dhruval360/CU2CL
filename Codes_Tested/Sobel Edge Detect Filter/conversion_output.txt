@@ -131,7 +131,7 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu:56:3: CU2CL Note: Rewriting single decl
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu:117:35: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu:117:25: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu Translation Time: 49 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu Translation Time: 48 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/grayscale.cu.
 clang version 3.4 (tags/RELEASE_34/final)
@@ -181,7 +181,7 @@ End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu:162:14: warning: conversion from string literal to 'char *' is deprecated [-Wc++11-compat-deprecated-writable-strings]
   writeImage("fromgpu.png", op2);
              ^
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu Translation Time: 69 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sobel Edge Detect Filter/CUDA/sobelEdgeFilterpng.cu Translation Time: 67 microseconds
 3 warnings generated.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!

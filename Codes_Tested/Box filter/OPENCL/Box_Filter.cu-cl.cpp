@@ -57,7 +57,7 @@ void __cu2cl_Init_Box_Filter_cu() {
 //
 // CUDA implementation of Box Filter
 //
-#include <opencv2/imgproc/imgproc.hpp>
+#include "opencv2/imgproc/imgproc.hpp-cl.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <string>

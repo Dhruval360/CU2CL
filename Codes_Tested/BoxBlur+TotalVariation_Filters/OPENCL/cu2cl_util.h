@@ -35,3 +35,5 @@ void __cu2cl_Cleanup_BoxBlur_TotalVariation_cu();
 #ifdef __cplusplus
 }
 #endif
+
+#define uchar4 cl_uchar4
