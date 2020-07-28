@@ -505,12 +505,12 @@ std::string CU2CLClean;
 
 std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
 
-
+int temp_arg_count = 0;
 int temp_count = 0; // This has been added to count the number of times a kernel call has an argument like dim3(x,y,z) without a previous declaration of the same
 //We also borrow the loose method of dealing with temporary output files from
 // CompilerInstance::clearOutputFiles
 void clearOutputFile(OutputFile *OF, FileManager *FM) {
-    if(!OF->TempFilename.empty()) {
+    if (!OF->TempFilename.empty()) {
         SmallString<128> NewOutFile(OF->Filename);
         FM->FixupRelativePath(NewOutFile);
         if (llvm::error_code ec = llvm::sys::fs::rename(OF->TempFilename, NewOutFile.str()))
@@ -704,7 +704,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     std::stringstream inlineStr;
     std::stringstream errStr;
     inlineStr << "/*";
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //Tack the source line information onto the diagnostic
         //inlineStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
         errStr << SM->getBufferName(expLoc) << ":" << SM->getExpansionLineNumber(expLoc) << ":" << SM->getExpansionColumnNumber(expLoc) << ": ";
@@ -719,7 +719,7 @@ void emitCU2CLDiagnostic(SourceManager * SM, SourceLocation loc, std::string sev
     inlineStr << inline_note << "*/\n";
     errStr << err_note << "\n";
 
-    if (expLoc.isValid()){
+    if (expLoc.isValid()) {
         //print the inline string(s) to the output file
         bool isValid;
         //Buffer the comment for outputing after translation is finished.
@@ -1021,18 +1021,18 @@ private:
             //TODO: Perhaps a second tier of filtering is needed
             else if (ce->getDirectCallee()->getNameAsString().find("cu") == 0)
                 return RewriteCUDACall(ce, newExpr);
-           
+
             std::string funcName = ce->getDirectCallee()->getNameAsString();
-            if (funcName.substr(0, 5) == "make_"){
+            if (funcName.substr(0, 5) == "make_") {
                 if (funcName.substr(5, 8) == "longlong")
-                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n"; 
+                    newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n";
                 else if (funcName.substr(5, 9) == "ulonglong")
                     newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by ulong*/\n";
-                
-                newExpr += "{";                
+
+                newExpr += "{";
                 int num_arguments = funcName[funcName.length() - 1] - '0';
                 Expr* x; std::string newX;
-                for (int i = 0; i < (num_arguments - 1); i++){
+                for (int i = 0; i < (num_arguments - 1); i++) {
                     x = ce->getArg(i);
                     newX = "";
                     RewriteKernelExpr(x, newX);
@@ -1381,7 +1381,7 @@ private:
             std::string newEvent;
             RewriteHostExpr(event, newEvent);
             newEvent = newEvent[0] == '&' ? newEvent.substr(1) : ('*' + newEvent);
-            newExpr = newEvent + " = clCreateUserEvent(__cu2cl_Context, &err);\n//printf(\"clCreateUserEvent for the event " + newEvent + ": %s\\n\", getErrorString(err))" ; 
+            newExpr = newEvent + " = clCreateUserEvent(__cu2cl_Context, &err);\n//printf(\"clCreateUserEvent for the event " + newEvent + ": %s\\n\", getErrorString(err))" ;
         }
         //else if (funcName == "cudaEventCreateWithFlags") {
         //TODO: Replace with clSetUserEventStatus
@@ -1528,7 +1528,7 @@ private:
             else {
                 var = dyn_cast<VarDecl>(dr->getDecl());
             }
-            
+
             newSize = vector_check_and_convert(newSize);
 
             //Replace with clCreateBuffer
@@ -1689,7 +1689,7 @@ private:
         //FIXME: Generate cu2cl_util.cl and the requisite boilerplate
         else if (funcName == "cudaMemset") {
             if (!UsesCUDAMemset) {
-                if(!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
+                if (!UsesCU2CLUtilCL) UsesCU2CLUtilCL = true;
                 GlobalCFuncs.push_back(CL_MEMSET);
                 GlobalHDecls.push_back(CL_MEMSET_H);
                 GlobalCLFuncs.push_back(CL_MEMSET_KERNEL);
@@ -1737,8 +1737,8 @@ private:
             if (FindStmt<DeclRefExpr>(arg) == NULL || !arg->IgnoreParenCasts()->isLValue()) {
                 //make a temporary variable to hold this value, pass it, and destroy it
                 //TODO: Do this in a separate block to guarantee scope
-                args << arg->getType().getAsString() << " __cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << " = " << newArg << ";\n";
-                args << "err = clSetKernelArg(" << kernelName << ", " << i << ", sizeof(" << arg->getType().getAsString() << "), &__cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << ");\n/*printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << ": %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/\n";
+                args << arg->getType().getAsString() << " __cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << temp_arg_count << " = " << newArg << ";\n";
+                args << "err = clSetKernelArg(" << kernelName << ", " << i << ", sizeof(" << arg->getType().getAsString() << "), &__cu2cl_Kernel_" << callee->getNameAsString() << "_temp_arg_" << i << temp_arg_count++ << ");\n/*printf(\"clSetKernelArg for argument " << i << " of kernel " << kernelName << ": %s\\n\", getErrorString(err));//Uncomment this for getting error string of the error code returned by clSetKernelArg*/\n";
 
                 std::stringstream comment;
                 comment << "Inserted temporary variable for kernel literal argument " << i << "!";
@@ -2226,21 +2226,21 @@ private:
             if (funcName == "__syncthreads") {
                 newExpr = "barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE)";
             }
-            else if (funcName.substr(0, 5) == "make_"){
-                if (funcName.substr(5, 8) == "longlong"){
+            else if (funcName.substr(0, 5) == "make_") {
+                if (funcName.substr(5, 8) == "longlong") {
                     newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by long*/\n";
                     newExpr += "(long)(";
                 }
-                else if (funcName.substr(5, 9) == "ulonglong"){
+                else if (funcName.substr(5, 9) == "ulonglong") {
                     newExpr = "/*CU2CL Tool:" + funcName + " not supported and replaced by ulong*/\n";
                     newExpr += "(ulong)(";
                 }
-                else{
+                else {
                     newExpr = "(" + funcName.substr(5) + ")(";
                 }
                 int num_arguments = funcName[funcName.length() - 1] - '0';
                 Expr* x; std::string newX;
-                for (int i = 0; i < (num_arguments - 1); i++){
+                for (int i = 0; i < (num_arguments - 1); i++) {
                     x = ce->getArg(i);
                     newX = "";
                     RewriteKernelExpr(x, newX);
@@ -3669,16 +3669,16 @@ private:
     }
 
     //Function to change vector types inside memory operations if found
-    std::string vector_check_and_convert(std::string newSize){
+    std::string vector_check_and_convert(std::string newSize) {
         //newSize will be of the kind sizeof(datatype) * some_number
         size_t position = newSize.find("sizeof(");
-        if(position != std::string::npos){
-            size_t end = newSize.find(')', position+1);
+        if (position != std::string::npos) {
+            size_t end = newSize.find(')', position + 1);
             size_t begin = position + 7;
-            std::string type = newSize.substr(begin, end-begin);
-            if(type[end-begin-1] >= '0' && type[end-begin-1] <= '9'){//Meaning the type is a vector type
+            std::string type = newSize.substr(begin, end - begin);
+            if (type[end - begin - 1] >= '0' && type[end - begin - 1] <= '9') { //Meaning the type is a vector type
                 type = RewriteVectorType(type, true);
-                newSize = newSize.substr(0,begin) + type + newSize.substr(end);
+                newSize = newSize.substr(0, begin) + type + newSize.substr(end);
             }
         }
         return newSize;
@@ -3967,7 +3967,7 @@ public:
         GlobalCDecls[mainFilename].empty();
         //TODO consider making this default
         // we will almost always need to load a kernel file
-        if(!UsesCU2CLLoadSrc) {
+        if (!UsesCU2CLLoadSrc) {
             GlobalCFuncs.push_back(LOAD_PROGRAM_SOURCE);
             GlobalHDecls.push_back(LOAD_PROGRAM_SOURCE_H);
             UsesCU2CLLoadSrc = true;
@@ -4063,7 +4063,7 @@ public:
             //Handles globally defined C or C++ functions
             if (fd) {
                 //Don't translate explicit template specializations
-                if(fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
+                if (fd->getTemplatedKind() == clang::FunctionDecl::TK_NonTemplate || fd->getTemplatedKind() == FunctionDecl::TK_FunctionTemplate) {
                     if (fd->hasAttr<CUDAGlobalAttr>() || fd->hasAttr<CUDADeviceAttr>()) {
                         //Device function, so rewrite kernel
                         RewriteKernelFunction(fd);
@@ -4438,7 +4438,7 @@ public:
         std::stringstream ss(Add);
         std::string item;
         //Tokenize based on a space character delimiter
-        while(std::getline(ss, item, ' ')) {
+        while (std::getline(ss, item, ' ')) {
             AddV.push_back(item);
         }
     }
@@ -4581,7 +4581,7 @@ void replaceVarDecl(DeclaratorDecl *decl, SourceTuple * ST) {
 bool isAncestor(Stmt * ancestor, Stmt * child) {
     if (ancestor == child) return true;
     //else if (ancestor->child_begin() != ancestor->child_end()) {
-    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++){
+    for (Stmt::child_iterator citr = ancestor->child_begin(); citr != ancestor->child_end(); citr++) {
         if (isAncestor(*citr, child)) return true;
     }
     return false;
@@ -4651,7 +4651,7 @@ int main(int argc, const char ** argv) {
 
     //After the tools run, we can finalize the global boilerplate
     //If __cu2cl_setDevice is used, we need to initialize the scan variables
-    if(UsesCUDASetDevice) {
+    if (UsesCUDASetDevice) {
         CU2CLInit += "    __cu2cl_AllDevices_size = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices_curr_idx = 0;\n";
         CU2CLInit += "    __cu2cl_AllDevices = NULL;\n";
@@ -5133,18 +5133,18 @@ int main(int argc, const char ** argv) {
     *cu2cl_header << "}\n";
     *cu2cl_header << "#endif\n";
     *cu2cl_header << "#include <vector>\n\n";
- /*
-    Vector types in cude are:
-    char1, uchar1, short1, ushort1, int1, uint1, long1, ulong1, float1
-    char2, uchar2, short2, ushort2, int2, uint2, long2, ulong2, float2
-    char3, uchar3, short3, ushort3, int3, uint3, long3, ulong3, float3
-    char4, uchar4, short4, ushort4, int4, uint4, long4, ulong4, float4
+    /*
+       Vector types in cude are:
+       char1, uchar1, short1, ushort1, int1, uint1, long1, ulong1, float1
+       char2, uchar2, short2, ushort2, int2, uint2, long2, ulong2, float2
+       char3, uchar3, short3, ushort3, int3, uint3, long3, ulong3, float3
+       char4, uchar4, short4, ushort4, int4, uint4, long4, ulong4, float4
 
-    longlong1, ulonglong1, double1
-    longlong2, ulonglong2, double2
+       longlong1, ulonglong1, double1
+       longlong2, ulonglong2, double2
 
-    longlong is not supported in openCL, hence we convert that to long
- */   
+       longlong is not supported in openCL, hence we convert that to long
+    */
     *cu2cl_header << "#define char1 cl_char\n";
     *cu2cl_header << "#define uchar1 cl_uchar\n";
     *cu2cl_header << "#define short1 cl_short\n";
