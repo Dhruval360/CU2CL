@@ -2,7 +2,7 @@
 // CUDA implementation of Median Filter
 //
 #include "opencv2/imgproc/imgproc.hpp"
-#include <opencv2/highgui.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <string>
 #include <stdio.h>
@@ -14,6 +14,9 @@
 #define FILTER_HEIGHT   3       
 
 using namespace std;
+
+// The wrapper to call median filter 
+void medianFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output);
 
 // Sort function on device
 __device__ void sort(unsigned char* filterVector)
@@ -56,8 +59,79 @@ __global__ void medianFilter(unsigned char *srcImage, unsigned char *dstImage, u
 }
 
 
-// The wrapper to call median filter 
-extern "C" void medianFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output)
+
+
+
+
+int main() {
+
+   // name of image
+   string image_name = "sample";
+
+   // input & output file names
+   string input_file =  image_name+".jpeg";
+   string output_file_cpu = image_name+"_cpu.jpeg";
+   
+
+   // Read input image 
+   cv::Mat srcImage = cv::imread(input_file ,CV_LOAD_IMAGE_UNCHANGED);
+   if(srcImage.empty())
+   {
+      std::cout<<"Image Not Found: "<< input_file << std::endl;
+      return -1;
+   }
+   cout <<"\ninput image size: "<<srcImage.cols<<" "<<srcImage.rows<<" "<<srcImage.channels()<<"\n";
+    
+   // Declare the output image  
+   cv::Mat dstImage (srcImage.size(), srcImage.type());
+
+   // run median filter on GPU  
+   medianFilter_GPU_wrapper(srcImage, dstImage);
+   // Output image
+   imwrite(output_file_gpu, dstImage);
+
+   return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void medianFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output)
 {
         // Use cuda event to catch time
         cudaEvent_t start, stop;
@@ -108,9 +182,3 @@ extern "C" void medianFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output)
         cudaEventElapsedTime(&milliseconds, start, stop);
         cout<< "\nProcessing time on GPU (ms): " << milliseconds << "\n";
 }
-
-
-
-
-
-
