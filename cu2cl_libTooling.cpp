@@ -342,6 +342,30 @@
     "   }\n" \
     "}\n\n"
 
+#define CU2CL_RESET_DEVICE_H \
+    "void __cu2cl_ResetDevice(cl_uint devID);\n"
+
+#define CU2CL_RESET_DEVICE \
+    "void __cu2cl_ResetDevice(cl_uint devID) {\n" \
+    "   if (__cu2cl_AllDevices_size == 0) {\n" \
+    "       __cu2cl_ScanDevices();\n" \
+    "   }\n" \
+    "   //only switch devices if it's a valid choice\n" \
+    "   if (devID < __cu2cl_AllDevices_size) {\n" \
+    "       //Assume auto-initialized queue and context, and free them\n" \
+    "       clReleaseCommandQueue(__cu2cl_CommandQueue);\n" \
+    "       clReleaseContext(__cu2cl_Context);\n" \
+    "       //update device and platform references\n" \
+    "       __cu2cl_AllDevices_curr_idx = devID;\n" \
+    "       __cu2cl_Device = __cu2cl_AllDevices[devID];\n" \
+    "       clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &__cu2cl_Platform, NULL);\n" \
+    "       //and make a new context and queue for the selected device\n" \
+    "       __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);\n" \
+    "       __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);\n" \
+    "   }\n" \
+    "}\n\n"
+
+
 #define CU2CL_ERROR_HANDLING\
     "const char *getErrorString(cl_int error){\n"\
     "\tswitch(error){\n"\
@@ -1267,7 +1291,30 @@ private:
         }
 
         //TODO Handle cudaDeviceReset
-
+        
+        else if (funcName == "cudaDeviceReset") {
+            if (!UsesCUDASetDevice) {
+                UsesCUDASetDevice = true;
+                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_device_id * __cu2cl_AllDevices;\n");
+                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_curr_idx;\n");
+                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_size;\n");
+                GlobalCFuncs.push_back(CU2CL_SCAN_DEVICES);
+                GlobalHDecls.push_back(CU2CL_SCAN_DEVICES_H);
+                GlobalCFuncs.push_back(CU2CL_RESET_DEVICE);
+                GlobalHDecls.push_back(CU2CL_RESET_DEVICE_H);
+            }
+            Expr *device = cudaCall->getArg(0);
+            //Device will only be an integer ID, so don't look for a reference
+            //DeclRefExpr *dre = FindStmt<DeclRefExpr>(device);
+            //if (dre != NULL) {
+            std::string newDevice;
+            RewriteHostExpr(device, newDevice);
+            //TODO also rewrite type as in cudaGetDevice
+            //VarDecl *var = dyn_cast<VarDecl>(dre->getDecl());
+            newExpr = "__cu2cl_ResetDevice(" + newDevice + ")";
+            emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Warning", "CU2CL Identified cudaDeviceReset usage", &HostReplace);
+            //}
+        }
         else if (funcName == "cudaGetDevice") {
             //Replace by assigning current value of clDevice to arg
             //TODO Alternatively, this could be queried from the queue with clGetCommandQueueInfo
