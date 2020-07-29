@@ -1,10 +1,10 @@
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <string>
 #include <stdio.h>
 #include <cuda.h>
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
 //
 #define BLOCK_SIZE      16
 #define FILTER_WIDTH    3       
@@ -112,7 +112,7 @@ void sharpeningFilter_GPU_wrapper(const cv::Mat& input, cv::Mat& output)
     cudaEventRecord(start);
 
     // Run BoxFilter kernel on CUDA 
-    sharpeningFilter <<<grid, block >>> (d_input, d_output, output.cols, output.rows, channel);
+    sharpeningFilter<<<grid, block >>>(d_input, d_output, output.cols, output.rows, channel);
 
     // Stop time
     cudaEventRecord(stop);

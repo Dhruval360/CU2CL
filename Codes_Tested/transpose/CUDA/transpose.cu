@@ -1,8 +1,9 @@
-#include "cuda.h"
+#include <cuda.h>
 #include <stdio.h>
+#include <time.h>
 
-const int N = 1024;		// The matrix used will be of size (N,N)
-const int K = 32;		// This is for the tile size (tile size is (K,K))
+#define N 1024		// The matrix used will be of size (N,N)
+#define K 32		// This is for the tile size (tile size is (K,K))
 
 // To compare the outputs obtained from the GPU with that of the CPU
 int compare_matrices(float* gpu, float* ref)

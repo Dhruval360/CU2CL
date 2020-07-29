@@ -1,11 +1,11 @@
 
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <string>
 #include <stdio.h>
 #include <cuda.h>
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
 
 #define BLOCK_SIZE      16
 #define FILTER_WIDTH    3       

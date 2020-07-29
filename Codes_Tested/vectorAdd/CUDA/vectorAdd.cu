@@ -1,5 +1,5 @@
 #include <stdio.h>
-# define N 512
+#define N 512
 
 
 void fill_array(int *data)
