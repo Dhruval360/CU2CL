@@ -128,7 +128,24 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu Translation Time: 44 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu:82:2: CU2CL Warning: CU2CL Identified cudaDeviceReset usage
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu:118:32: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu:118:27: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu Translation Time: 50 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Laplacian Filter/CUDA/Laplacian Filter.cu.
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaFree!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_output not matching Decl d_input
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!
+CU2CL DEBUG: Rejected propagation of DeclRefExpr d_input not matching Decl d_output
+CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaFree!
 Retained 1 ASTContexts!

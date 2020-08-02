@@ -130,7 +130,7 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Box filter/CUDA/Box_Filter.cu:115:26: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Box filter/CUDA/Box_Filter.cu:115:21: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Box filter/CUDA/Box_Filter.cu Translation Time: 46 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Box filter/CUDA/Box_Filter.cu Translation Time: 45 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Box filter/CUDA/Box_Filter.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!

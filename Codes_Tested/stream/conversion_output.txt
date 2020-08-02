@@ -52,7 +52,7 @@ ignoring duplicate directory "/usr/include"
 End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/stream/CUDA/stream.cu:28:9: CU2CL Note: Inserted temporary variable for kernel literal argument 0!
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/stream/CUDA/stream.cu:28:9: CU2CL Note: Inserted temporary variable for kernel literal argument 1!
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/stream/CUDA/stream.cu:31:5: CU2CL Unsupported: Unsupported CUDA call: cudaDeviceReset
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/stream/CUDA/stream.cu:31:5: CU2CL Warning: CU2CL Identified cudaDeviceReset usage
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/stream/CUDA/stream.cu Translation Time: 34 microseconds
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 Retained 1 ASTContexts!
