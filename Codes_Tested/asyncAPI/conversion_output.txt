@@ -51,10 +51,10 @@ ignoring duplicate directory "/usr/include"
  /usr/include
 End of search list.
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu:29:10: fatal error: 'helper_cuda.h' file not found
-#include "helper_cuda.h"
+#include <helper_cuda.h>
          ^
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu:132:5: CU2CL Unsupported: Unsupported CUDA call: cudaDeviceReset
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu Translation Time: 38 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu:132:5: CU2CL Warning: CU2CL Identified cudaDeviceReset usage
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu Translation Time: 35 microseconds
 1 error generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/asyncAPI/CUDA/asyncAPI.cu.
 Retained 1 ASTContexts!

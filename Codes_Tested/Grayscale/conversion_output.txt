@@ -131,15 +131,9 @@ fatal error: too many errors emitted, stopping now [-ferror-limit=]
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu:56:3: CU2CL Note: Rewriting single decl
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu:117:35: CU2CL Note: Fast-tracked dim3 type without cast
 /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu:117:25: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu Translation Time: 51 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu Translation Time: 47 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Grayscale/CUDA/grayscale.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemcpy!
 CU2CL DEBUG: Unpropagated cl_mem AST ancestor for reference: d_rgbaImage
-Tried to upwards propagate a non-simple argument!
-CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
-CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMemset!
-CU2CL DEBUG: Unpropagated cl_mem AST ancestor for reference: d_greyImage
-Tried to upwards propagate a non-simple argument!
-Retained 1 ASTContexts!

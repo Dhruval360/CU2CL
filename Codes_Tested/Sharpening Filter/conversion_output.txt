@@ -128,9 +128,9 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu:115:31: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu:115:25: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu Translation Time: 49 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu:115:30: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu:115:24: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu Translation Time: 47 microseconds
 20 errors generated.
 Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Sharpening Filter/CUDA/Parallel_gpu.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!

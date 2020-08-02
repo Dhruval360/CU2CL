@@ -50,7 +50,7 @@ ignoring duplicate directory "/usr/include"
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/vectorDotProduct/CUDA/dotprod.cu Translation Time: 37 microseconds
+/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/vectorDotProduct/CUDA/dotprod.cu Translation Time: 40 microseconds
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 CU2CL DEBUG: Rejected propagation of DeclRefExpr dev_b not matching Decl dev_a
 CU2CL DEBUG: Rejected propagation of DeclRefExpr dev_partial_c not matching Decl dev_a

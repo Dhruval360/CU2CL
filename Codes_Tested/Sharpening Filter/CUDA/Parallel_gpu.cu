@@ -58,7 +58,7 @@ __global__ void sharpeningFilter(unsigned char* srcImage, unsigned char* dstImag
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    float kernel[FILTER_WIDTH][FILTER_HEIGHT] = { -1, -1, -1, -1, 9, -1, -1, -1, -1 };
+    float kernel[FILTER_WIDTH][FILTER_HEIGHT] = { {-1, -1, -1}, {-1, 9, -1}, {-1, -1, -1} };
     // only threads inside image will write results
     if ((x >= FILTER_WIDTH / 2) && (x < (width - FILTER_WIDTH / 2)) && (y >= FILTER_HEIGHT / 2) && (y < (height - FILTER_HEIGHT / 2)))
     {

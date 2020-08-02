@@ -71,7 +71,7 @@ int main() {
    // input & output file names
    string input_file =  image_name+".jpeg";
    string output_file_cpu = image_name+"_cpu.jpeg";
-   
+   string output_file_gpu = image_name+"_gpu.jpeg";
 
    // Read input image 
    cv::Mat srcImage = cv::imread(input_file ,CV_LOAD_IMAGE_UNCHANGED);
