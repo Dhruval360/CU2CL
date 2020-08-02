@@ -1292,17 +1292,17 @@ private:
         }
 
         else if (funcName == "cudaDeviceReset") {
-        // if (!UsesCUDADeviceReset) {
-          //      UsesCUDADeviceReset = true;
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_device_id * __cu2cl_AllDevices;\n");
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_curr_idx;\n");
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_size;\n");
-                GlobalCFuncs.push_back(CU2CL_SCAN_DEVICES);
-                GlobalHDecls.push_back(CU2CL_SCAN_DEVICES_H);
-                GlobalCFuncs.push_back(CU2CL_RESET_DEVICE);
-                GlobalHDecls.push_back(CU2CL_RESET_DEVICE_H);
-           // }
-           // Expr *device = cudaCall->getArg(0);
+            // if (!UsesCUDADeviceReset) {
+            //      UsesCUDADeviceReset = true;
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_device_id * __cu2cl_AllDevices;\n");
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_curr_idx;\n");
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_size;\n");
+            GlobalCFuncs.push_back(CU2CL_SCAN_DEVICES);
+            GlobalHDecls.push_back(CU2CL_SCAN_DEVICES_H);
+            GlobalCFuncs.push_back(CU2CL_RESET_DEVICE);
+            GlobalHDecls.push_back(CU2CL_RESET_DEVICE_H);
+            // }
+            // Expr *device = cudaCall->getArg(0);
             //Device will only be an integer ID, so don't look for a reference
             //DeclRefExpr *dre = FindStmt<DeclRefExpr>(device);
             //if (dre != NULL) {
@@ -1315,7 +1315,7 @@ private:
             //}
         }
 
-        
+
         else if (funcName == "cudaDeviceReset") {
             if (!UsesCUDASetDevice) {
                 UsesCUDASetDevice = true;
@@ -4660,6 +4660,17 @@ bool isAncestor(Stmt * ancestor, Stmt * child) {
     //}
 }
 
+void replaceAll(std::string & str, const std::string & from, const std::string & to) {
+    if (from.empty())
+        return;
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+}
+
+
 int main(int argc, const char ** argv) {
 
     //Before we do anything, parse off common arguments, a la MPI
@@ -5184,7 +5195,27 @@ int main(int argc, const char ** argv) {
         }
         if (const RewriteBuffer *RewriteBuff =
                     GlobalKernRewrite.getRewriteBufferFor(fid)) {
-            *(outFile->OS) << std::string(RewriteBuff->begin(), RewriteBuff->end());
+
+            std::string kernelFile = std::string(RewriteBuff->begin(), RewriteBuff->end());
+
+            std::string namespace_message = "/*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ \n // using";
+            replaceAll(kernelFile, "using", namespace_message);
+            replaceAll(kernelFile, "threadIdx.x", "get_local_id(0)");
+            replaceAll(kernelFile, "threadIdx.y", "get_local_id(1)");
+            replaceAll(kernelFile, "threadIdx.z", "get_local_id(2)");
+            replaceAll(kernelFile, "blockIdx.x", "get_group_id(0)");
+            replaceAll(kernelFile, "blockIdx.y", "get_group_id(1)");
+            replaceAll(kernelFile, "blockIdx.z", "get_group_id(2)");
+
+            replaceAll(kernelFile, "blockDim.x", "get_local_size(0)");
+            replaceAll(kernelFile, "blockDim.y", "get_local_size(1)");
+            replaceAll(kernelFile, "blockDim.z", "get_local_size(2)");
+
+            replaceAll(kernelFile, "gridDim.x", "get_num_groups(0)");
+            replaceAll(kernelFile, "gridDim.y", "get_num_groups(1)");
+            replaceAll(kernelFile, "gridDim.z", "get_num_groups(2)");
+
+            *(outFile->OS) << kernelFile;
         }
         else {
             llvm::errs() << "No (kernel) changes made to " << RewriteSM.getFileEntryForID(fid)->getName() << "\n";
