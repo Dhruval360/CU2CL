@@ -1305,13 +1305,13 @@ private:
 
 
         else if (funcName == "cudaDeviceReset") {
-            
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_device_id * __cu2cl_AllDevices;\n");
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_curr_idx;\n");
-                GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_size;\n");        
-                GlobalCFuncs.push_back(CU2CL_RESET_DEVICE);
-                GlobalHDecls.push_back(CU2CL_RESET_DEVICE_H);
-         
+
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_device_id * __cu2cl_AllDevices;\n");
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_curr_idx;\n");
+            GlobalCDecls["cu2cl_util.cpp"].push_back("cl_uint __cu2cl_AllDevices_size;\n");
+            GlobalCFuncs.push_back(CU2CL_RESET_DEVICE);
+            GlobalHDecls.push_back(CU2CL_RESET_DEVICE_H);
+
             //Expr *device = cudaCall->getArg(0);
             //Device will only be an integer ID, so don't look for a reference
             //DeclRefExpr *dre = FindStmt<DeclRefExpr>(device);
@@ -1539,6 +1539,10 @@ private:
                 //Add var to HostMemVars
                 HostMemVars.insert(var);
             }
+        }
+        else if (funcName == "cudaGetLastError")
+        {
+            newExpr = "getErrorString(err)";
         }
         else if (funcName == "cudaFree") {
             Expr *devPtr = cudaCall->getArg(0);
