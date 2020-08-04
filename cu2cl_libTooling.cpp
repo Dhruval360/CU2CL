@@ -1736,14 +1736,17 @@ private:
             else if (enumString == "cudaMemcpyHostToDevice") {
                 //clEnqueueWriteBuffer
                 newExpr += "err = clEnqueueWriteBufferRect(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count ","  +  dPitch + ", 0, " +  sPitch + ", 0, " + newSrc + ", 0, NULL, NULL); \n //printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+                temp_origin_count++; temp_region_count++;
             }
             else if (enumString == "cudaMemcpyDeviceToHost") {
                 //clEnqueueReadBuffer
                 newExpr += "err = clEnqueueReadBufferRect(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
+                temp_origin_count++; temp_region_count++;
             }
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
                 newExpr += "err = clEnqueueCopyBufferRect(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ",cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+                temp_origin_count++; temp_region_count++;
             }
             else {
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
