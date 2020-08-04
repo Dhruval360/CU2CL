@@ -530,6 +530,8 @@ std::string CU2CLClean;
 
 std::vector<std::string> GlobalHDecls, GlobalCFuncs, GlobalCLFuncs, UtilKernels;
 
+int temp_origin_count = 0;
+int temp_region_count = 0;
 int temp_arg_count = 0;
 int temp_count = 0; // This has been added to count the number of times a kernel call has an argument like dim3(x,y,z) without a previous declaration of the same
 //We also borrow the loose method of dealing with temporary output files from
@@ -1691,6 +1693,57 @@ private:
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
                 newExpr = "err = clEnqueueCopyBuffer(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ", 0, 0, " + newCount + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+            }
+            else {
+                emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
+            }
+        }
+        else if (funcName == "cudaMemcpy2D") {
+            //Inspect kind of memcpy2D and rewrite accordingly
+            Expr *dst = cudaCall->getArg(0);
+            Expr *src = cudaCall->getArg(2);
+            Expr *dpitch = cudaCall->getArg(1);
+            Expr *spitch = cudaCall->getArg(3);
+            Expr *width = cudaCall->getArg(4);
+            Expr *height = cudaCall->getArg(5);
+            Expr *kind = cudaCall->getArg(6);
+            std::string newDst, newSrc, dPitch, sPitch, Width, Height;
+            RewriteHostExpr(dst, newDst);
+            RewriteHostExpr(src, newSrc);
+            RewriteHostExpr(dpitch, dPitch);
+            RewriteHostExpr(spitch, sPitch);
+            RewriteHostExpr(width, Width);
+            RewriteHostExpr(height, Height);
+
+            DeclRefExpr *dr = FindStmt<DeclRefExpr>(kind);
+            EnumConstantDecl *enumConst = dyn_cast<EnumConstantDecl>(dr->getDecl());
+            std::string enumString = enumConst->getNameAsString();
+
+
+            newExpr = "size_t cu2cl_temp_origin" + temp_origin_count + "[3] = {0,0,0};\nsize_t cu2cl_temp_region" + temp_region_count + "[3] = {" + Width + "," + Height + ",1};\n";
+
+            if (enumString == "cudaMemcpyHostToHost") {
+                //standard memcpy
+                //Make sure to include <string.h>
+                if (!IncludingStringH) {
+                    HostIncludes += "#include <string.h>\n";
+                    IncludingStringH = true;
+                }
+
+                // need to be width*height, the net size
+                newExpr = "memcpy(" + newDst + ", " + newSrc + ", " + Width + "*" + Height ")";
+            }
+            else if (enumString == "cudaMemcpyHostToDevice") {
+                //clEnqueueWriteBuffer
+                newExpr += "err = clEnqueueWriteBufferRect(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count ","  +  dPitch + ", 0, " +  sPitch + ", 0, " + newSrc + ", 0, NULL, NULL); \n //printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+            }
+            else if (enumString == "cudaMemcpyDeviceToHost") {
+                //clEnqueueReadBuffer
+                newExpr += "err = clEnqueueReadBufferRect(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
+            }
+            else if (enumString == "cudaMemcpyDeviceToDevice") {
+                //clEnqueueCopyBuffer
+                newExpr += "err = clEnqueueCopyBufferRect(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ",cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
             }
             else {
                 emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Unsupported", "Unsupported cudaMemcpyKind: " + enumString, &HostReplace);
