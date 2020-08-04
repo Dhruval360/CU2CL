@@ -74,7 +74,7 @@ int main() {
    string output_file_gpu = image_name+"_gpu.jpeg";
 
    // Read input image 
-   cv::Mat srcImage = cv::imread(input_file ,CV_LOAD_IMAGE_UNCHANGED);
+   cv::Mat srcImage = cv::imread(input_file ,cv::IMREAD_UNCHANGED);
    if(srcImage.empty())
    {
       std::cout<<"Image Not Found: "<< input_file << std::endl;
