@@ -1707,7 +1707,7 @@ private:
             std::string enumString = enumConst->getNameAsString();
 
 
-            newExpr = "size_t cu2cl_temp_origin" + temp_origin_count + "[3] = {0,0,0};\nsize_t cu2cl_temp_region" + temp_region_count + "[3] = {" + Width + "," + Height + ",1};\n";
+            newExpr = "size_t cu2cl_temp_origin" +  std::to_string(temp_origin_count) + "[3] = {0,0,0};\nsize_t cu2cl_temp_region" +  std::to_string(temp_region_count) + "[3] = {" + Width + "," + Height + ",1};\n";
 
             if (enumString == "cudaMemcpyHostToHost") {
                 //standard memcpy
@@ -1718,21 +1718,21 @@ private:
                 }
 
                 // need to be width*height, the net size
-                newExpr = "memcpy(" + newDst + ", " + newSrc + ", " + Width + "*" + Height ")";
+                newExpr = "memcpy(" + newDst + ", " + newSrc + ", " + Width + "*" + Height +  ")";
             }
             else if (enumString == "cudaMemcpyHostToDevice") {
                 //clEnqueueWriteBuffer
-                newExpr += "err = clEnqueueWriteBufferRect(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count ","  +  dPitch + ", 0, " +  sPitch + ", 0, " + newSrc + ", 0, NULL, NULL); \n //printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+                newExpr += "err = clEnqueueWriteBufferRect(__cu2cl_CommandQueue, " + newDst + ", CL_TRUE,cu2cl_temp_origin" +  std::to_string(temp_origin_count) + ",cu2cl_temp_origin" + std::to_string(temp_origin_count) + ",cu2cl_temp_region" +  std::to_string(temp_region_count) + ","  +  dPitch + ", 0, " +  sPitch + ", 0, " + newSrc + ", 0, NULL, NULL); \n //printf(\"Memory copy from host variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
                 temp_origin_count++; temp_region_count++;
             }
             else if (enumString == "cudaMemcpyDeviceToHost") {
                 //clEnqueueReadBuffer
-                newExpr += "err = clEnqueueReadBufferRect(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE,cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
+                newExpr += "err = clEnqueueReadBufferRect(__cu2cl_CommandQueue, " + newSrc + ", CL_TRUE,cu2cl_temp_origin" +  std::to_string(temp_origin_count) + ",cu2cl_temp_origin" +  std::to_string(temp_origin_count) + ",cu2cl_temp_region" +  std::to_string(temp_region_count) + "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newDst + " to host variable " + newSrc + ": %s\\n\", getErrorString(err))";
                 temp_origin_count++; temp_region_count++;
             }
             else if (enumString == "cudaMemcpyDeviceToDevice") {
                 //clEnqueueCopyBuffer
-                newExpr += "err = clEnqueueCopyBufferRect(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ",cu2cl_temp_origin" + temp_origin_count ",cu2cl_temp_origin" + temp_origin_count, "cu2cl_temp_region" + temp_region_count "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
+                newExpr += "err = clEnqueueCopyBufferRect(__cu2cl_CommandQueue, " + newSrc + ", " + newDst + ",cu2cl_temp_origin" + std::to_string(temp_origin_count) + ",cu2cl_temp_origin" + std::to_string(temp_origin_count) + ",cu2cl_temp_region" +  std::to_string(temp_region_count) +  "," + dPitch + ", 0," + sPitch + ", 0, " + newDst + ", 0, NULL, NULL);\n//printf(\"Memory copy from device variable " + newSrc + " to device variable " + newDst + ": %s\\n\", getErrorString(err))";
                 temp_origin_count++; temp_region_count++;
             }
             else {
