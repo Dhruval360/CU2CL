@@ -445,6 +445,7 @@ bool UsesCUDAFreeHost = false;
 bool UsesCUDASetDevice = false;
 bool UsesCU2CLUtilCL = false;
 bool UsesCU2CLLoadSrc = false;
+bool UsesCUDAMallocPitch = false;
 
 //internal flags for command-line toggles
 bool AddInlineComments = true; //defaults to ON, turn off with '--inline-comments=false' at the command line
@@ -1611,6 +1612,63 @@ private:
 
             //Add var to DeviceMemVars
             DeviceMemVars.insert(var);
+        }
+        else if (funcName == "cudaMallocPitch"){ // cudaMallocPitch(&dA, &pitch, sizeof(float)*N, N);
+            if (!UsesCUDAMallocPitch) {
+                //Add this to the boiler plate in the main cpp file:
+                /*
+                cl_uint cu2cl_align = 0;
+                clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &cu2cl_align, 0);
+                cu2cl_align /= 8;
+                */
+                UsesCUDAMallocPitch = true;
+            }
+            Expr *devPtr = cudaCall->getArg(0);
+            Expr *pitch = cudaCall->getArg(1);
+            Expr *width = cudaCall->getArg(2);
+            Expr *height = cudaCall->getArg(3);
+
+            std::string newDevPtr, newWidth, newHeight, newPitch;
+            RewriteHostExpr(width, newWidth);
+            RewriteHostExpr(height, newHeight);
+            RewriteHostExpr(devPtr, newDevPtr);
+            RewriteHostExpr(pitch, newPitch);
+
+            DeclRefExpr *dr = FindStmt<DeclRefExpr>(devPtr);
+            MemberExpr *mr = FindStmt<MemberExpr>(devPtr);
+            DeclaratorDecl *var;
+            //If the device pointer is a struct or class member, it shows up as a MemberExpr rather than a DeclRefExpr
+            if (mr != NULL) {
+                emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Note", "Identified member expression in cudaMalloc device pointer", &HostReplace);
+                var = dyn_cast<DeclaratorDecl>(mr->getMemberDecl());
+            }
+            //If it's just a global or locally-scoped singleton, then it shows up as a DeclRefExpr
+            else {
+                var = dyn_cast<VarDecl>(dr->getDecl());
+            }
+            newWidth = vector_check_and_convert(newWidth);
+            //Replace with clCreateBuffer
+            newDevPtr = newDevPtr[0] == '&' ? newDevPtr.substr(1) : ("*" + newDevPtr) ; // To prevent the occurence of "*&variable_name"
+            newPitch = newPitch[0] == '&' ? newPitch.substr(1) : ("*" + newPitch) ; // To prevent the occurence of "*&variable_name"
+            newExpr = newPitch + " = (size_t)(cu2cl_ceil(" + newWidth + ", cu2cl_align))*cu2cl_align;\n";
+            newExpr = newExpr + newDevPtr + " = clCreateBuffer(__cu2cl_Context, CL_MEM_READ_WRITE, " + newPitch + "*" + newHeight + ", NULL, &err);\n//printf(\"clCreateBuffer for device variable " + newDevPtr + ": %s\\n\", getErrorString(err))";
+
+            DeclGroupRef varDG(var);
+            if (CurVarDeclGroups.find(varDG) != CurVarDeclGroups.end()) {
+                DeviceMemDGs.insert(*CurVarDeclGroups.find(varDG));
+            }
+            else if (GlobalVarDeclGroups.find(varDG) != GlobalVarDeclGroups.end()) {
+                DeviceMemDGs.insert(*GlobalVarDeclGroups.find(varDG));
+            }
+            else {
+                emitCU2CLDiagnostic(SM, cudaCall->getLocStart(), "CU2CL Note", "Rewriting single decl", &HostReplace);
+                //Change variable's type to cl_mem
+                TypeLoc tl = var->getTypeSourceInfo()->getTypeLoc();
+                DeclsToTranslate.push_back(std::pair<NamedDecl*, SourceTuple*>((dyn_cast<NamedDecl>(var)), ST));
+            }
+
+            //Add var to DeviceMemVars
+            DeviceMemVars.insert(var);        
         }
         else if (funcName == "cudaMallocHost") {
             //Replace with __cu2cl_MallocHost
@@ -5278,6 +5336,7 @@ int main(int argc, const char ** argv) {
     *cu2cl_header << "}\n";
     *cu2cl_header << "#endif\n";
     *cu2cl_header << "#include <vector>\n\n";
+    if(UsesCUDAMallocPitch) *cu2cl_header << "#define cu2cl_ceil(a,b) (a%b == 0)? (a/b) : (a/b)+1\n";
     /*
        Vector types in cude are:
        char1, uchar1, short1, ushort1, int1, uint1, long1, ulong1, float1
