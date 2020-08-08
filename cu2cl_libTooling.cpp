@@ -208,7 +208,6 @@
     "cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end) {\n" \
     "    cl_int ret;\n" \
     "    cl_ulong s, e;\n" \
-    "    float fs, fe;\n" \
     "    ret |= clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &s, NULL);\n" \
     "    ret |= clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &e, NULL);\n" \
     "    s = e - s;\n" \
@@ -1493,7 +1492,7 @@ private:
             //If stream == 0, then cl_command_queue == __cu2cl_CommandQueue
             if (newStream == "0" || (newStream.length() == 0)) // As the user need not pass 0 since its a default parameter
                 newStream = "__cu2cl_CommandQueue";
-            newExpr = "err = clEnqueueMarkerWithWaitList(" + newStream + ", 0, 0, &" + newEvent + ");\n//printf(\"clEnqueMarker for the event " + newEvent + ": %s\\n\", getErrorString(err))";
+            newExpr = "err = clEnqueueMarkerWithWaitList(" + newStream + ", 0, 0, &" + newEvent + ");\n//printf(\"clEnqueMarkerWithWaitList for the event " + newEvent + ": %s\\n\", getErrorString(err))";
         }
         else if (funcName == "cudaEventSynchronize") {
             //Replace with clWaitForEvents
@@ -1615,7 +1614,7 @@ private:
         }
         else if (funcName == "cudaMallocPitch"){ // cudaMallocPitch(&dA, &pitch, sizeof(float)*N, N);
             if (!UsesCUDAMallocPitch) {
-                //Add this to the boiler plate in the main cpp file:
+                //The following code will be added to the boiler plate in the main cpp file:
                 /*
                 cl_uint cu2cl_align = 0;
                 clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &cu2cl_align, 0);
@@ -4371,6 +4370,7 @@ public:
                 CU2CLInit += "    __cu2cl_Init_" + file + "();\n";
             }
             GlobalCDecls[(*i).first].push_back("cl_int err;\n");
+            if(UsesCUDAMallocPitch) GlobalCDecls[(*i).first].push_back("cl_uint cu2cl_align = 0;\n");
             CLInit = "void __cu2cl_Init_" + file + "() {\n";
             std::list<llvm::StringRef> &l = (*i).second;
             //Paul: Addition to generate ALTERA .aocx build from binary with an ifdef
@@ -4402,6 +4402,10 @@ public:
                 CLInit += "    __cu2cl_Kernel_" + kernelName + " = clCreateKernel(__cu2cl_Program_" + file + ", \"" + kernelName + "\", &err);\n";
                 CLInit += "    /*printf(\"__cu2cl_Kernel_" + kernelName + " creation: %s\\n\", getErrorString(err)); // Uncomment this line to get error string for the error code returned by clCreateKernel while creating the Kernel: " + kernelName + "*/\n";
             }
+            if(UsesCUDAMallocPitch){
+                CLInit += "clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &cu2cl_align, 0);\n";
+                CLInit += "cu2cl_align /= 8;\n";
+            } 
             CLInit += "}\n\n";
             //Add the initializer to a deferred list of boilerplate
             // to be inserted after relevant cl_program/cl_kernel declarations
