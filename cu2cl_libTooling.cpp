@@ -2022,10 +2022,10 @@ private:
             std::string s;
             RewriteHostExpr(arg, s);
             if (s[1] == '=') {
-                std::string out = "size_t temp" + std::to_string(temp_count) + "[3]" + s + ";\n";
+                std::string out = "size_t cu2cl_temp" + std::to_string(temp_count) + "[3]" + s + ";\n";
                 args << out;
                 for (unsigned int i = 0; i < 3; i++)
-                    args << "globalWorkSize[0] = (" << "temp" << std::to_string(temp_count) << "[" << i << "]"  << ")*localWorkSize[" << i << "];\n";
+                    args << "globalWorkSize[0] = (" << "cu2cl_temp" << std::to_string(temp_count) << "[" << i << "]"  << ")*localWorkSize[" << i << "];\n";
                 temp_count++;
             }
             else
