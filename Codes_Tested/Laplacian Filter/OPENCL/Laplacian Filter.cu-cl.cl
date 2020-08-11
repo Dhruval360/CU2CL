@@ -1,5 +1,5 @@
 
-#include <opencv2/imgproc/imgproc.hpp>
+
 
 
 
@@ -22,7 +22,7 @@ __kernel void laplacianFilter(__global unsigned char *srcImage, __global unsigne
    int x = get_group_id(0)*get_local_size(0) + get_local_id(0);
    int y = get_group_id(1)*get_local_size(1) + get_local_id(1);
 
-   float ker[3][3] = {0, -1, 0, -1, 4, -1, 0, -1, 0};
+   float ker[3][3] = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}};
    //float kernel[3][3] = {-1, -1, -1, -1, 8, -1, -1, -1, -1};   
    // only threads inside image will write results
    if((x>=FILTER_WIDTH/2) && (x<(width-FILTER_WIDTH/2)) && (y>=FILTER_HEIGHT/2) && (y<(height-FILTER_HEIGHT/2)))

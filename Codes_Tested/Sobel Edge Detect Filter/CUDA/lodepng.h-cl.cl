@@ -555,8 +555,10 @@ typedef struct LodePNGEncoderSettings
   completely follow the official PNG heuristic, filter_palette_zero must be true and
   filter_strategy must be LFS_MINSUM*/
   unsigned filter_palette_zero;
-  /*Which filter strategy to use when not using zeroes due to filter_palette_zero.
-  Set filter_palette_zero to 0 to ensure always using your chosen strategy. Default: LFS_MINSUM*/
+  /*Which filter strategy to use when not /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using zeroes due to filter_palette_zero.
+  Set filter_palette_zero to 0 to ensure always /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using your chosen strategy. Default: LFS_MINSUM*/
   LodePNGFilterStrategy filter_strategy;
   /*used if filter_strategy is LFS_PREDEFINED. In that case, this must point to a buffer with
   the same length as the amount of scanlines in the image, and each value must <= 5. You
@@ -774,13 +776,15 @@ public:
 };
 
 #ifdef LODEPNG_COMPILE_DECODER
-/* Same as other lodepng::decode, but using a State for more settings and information. */
+/* Same as other lodepng::decode, but /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using a State for more settings and information. */
 
 
 #endif /*LODEPNG_COMPILE_DECODER*/
 
 #ifdef LODEPNG_COMPILE_ENCODER
-/* Same as other lodepng::encode, but using a State for more settings and information. */
+/* Same as other lodepng::encode, but /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using a State for more settings and information. */
 
 
 #endif /*LODEPNG_COMPILE_ENCODER*/
@@ -897,7 +901,8 @@ LodePNG exists out of two files:
 -lodepng.h: the header file for both C and C++
 -lodepng.c(pp): give it the name lodepng.c or lodepng.cpp (or .cc) depending on your usage
 
-If you want to start using LodePNG right away without reading this doc, get the
+If you want to start /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using LodePNG right away without reading this doc, get the
 examples from the LodePNG website to see how to use it in code, or check the
 smaller examples in chapter 13 here.
 
@@ -961,7 +966,8 @@ The following features are _not_ supported:
 
 The C version uses buffers allocated with alloc that you need to free()
 yourself. You need to use init and cleanup functions for each struct whenever
-using a struct from the C version to avoid exploits and memory leaks.
+/*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using a struct from the C version to avoid exploits and memory leaks.
 
 The C++ version has extra functions with std::vectors in the interface and the
 lodepng::State class which is a LodePNGState with constructor and destructor.
@@ -983,7 +989,8 @@ of lodepng.cpp), and compile it with a C compiler.
 Even if carefully designed, it's always possible that LodePNG contains possible
 exploits. If you discover one, please let me know, and it will be fixed.
 
-When using LodePNG, care has to be taken with the C version of LodePNG, as well
+When /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using LodePNG, care has to be taken with the C version of LodePNG, as well
 as the C-style structs when working with C++. The following conventions are used
 for all C-style structs:
 
@@ -998,14 +1005,16 @@ for all C-style structs:
 
 Decoding converts a PNG compressed image to a raw pixel buffer.
 
-Most documentation on using the decoder is at its declarations in the header
+Most documentation on /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the decoder is at its declarations in the header
 above. For C, simple decoding can be done with functions such as
 lodepng_decode32, and more advanced decoding can be done with the struct
 LodePNGState and lodepng_decode. For C++, all decoding can be done with the
 various lodepng::decode functions, and lodepng::State can be used for advanced
 features.
 
-When using the LodePNGState, it uses the following fields for decoding:
+When /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the LodePNGState, it uses the following fields for decoding:
 *) LodePNGInfo info_png: it stores extra information about the PNG (the input) in here
 *) LodePNGColorMode info_raw: here you can say what color mode of the raw image (the output) you want to get
 *) LodePNGDecoderSettings decoder: you can specify a few extra settings for the decoder to use
@@ -1040,7 +1049,8 @@ chunks, and to disable the decoding of tEXt chunks.
 
 There's also a setting color_convert, true by default. If false, no conversion
 is done, the resulting data will be as it was in the PNG (after decompression)
-and you'll have to puzzle the colors of the pixels together yourself using the
+and you'll have to puzzle the colors of the pixels together yourself /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the
 color type information in the LodePNGInfo.
 
 
@@ -1049,7 +1059,8 @@ color type information in the LodePNGInfo.
 
 Encoding converts a raw pixel buffer to a PNG compressed image.
 
-Most documentation on using the encoder is at its declarations in the header
+Most documentation on /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the encoder is at its declarations in the header
 above. For C, simple encoding can be done with functions such as
 lodepng_encode32, and more advanced decoding can be done with the struct
 LodePNGState and lodepng_encode. For C++, all encoding can be done with the
@@ -1060,7 +1071,8 @@ Like the decoder, the encoder can also give errors. However it gives less errors
 since the encoder input is trusted, the decoder input (a PNG image that could
 be forged by anyone) is not trusted.
 
-When using the LodePNGState, it uses the following fields for encoding:
+When /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the LodePNGState, it uses the following fields for encoding:
 *) LodePNGInfo info_png: here you specify how you want the PNG (the output) to be.
 *) LodePNGColorMode info_raw: here you say what color type of the raw image (the input) has
 *) LodePNGEncoderSettings encoder: you can specify a few settings for the encoder to use
@@ -1087,7 +1099,8 @@ LodePNGColorMode info_raw
 -------------------------
 
 You specify the color type of the raw image that you give to the input here,
-including a possible transparent color key and palette you happen to be using in
+including a possible transparent color key and palette you happen to be /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using in
 your raw image data.
 
 By default, 32-bit color is assumed, meaning your input has to be in RGBA
@@ -1302,7 +1315,8 @@ then you have a chunk, and can check the following things of it.
 
 NOTE: none of these functions check for memory buffer boundaries. To avoid
 exploits, always make sure the buffer contains all the data of the chunks.
-When using lodepng_chunk_next, make sure the returned value is within the
+When /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using lodepng_chunk_next, make sure the returned value is within the
 allocated memory.
 
 unsigned lodepng_chunk_length(const unsigned char* chunk):
@@ -1365,10 +1379,12 @@ info_png.unknown_chunks_data[0] is the chunks before PLTE
 info_png.unknown_chunks_data[1] is the chunks after PLTE, before IDAT
 info_png.unknown_chunks_data[2] is the chunks after IDAT
 
-The chunks in these 3 buffers can be iterated through and read by using the same
+The chunks in these 3 buffers can be iterated through and read by /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the same
 way described in the previous subchapter.
 
-When using the decoder to decode a PNG, you can make it store all unknown chunks
+When /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using the decoder to decode a PNG, you can make it store all unknown chunks
 if you set the option settings.remember_unknown_chunks to 1. By default, this
 option is off (0).
 
@@ -1607,7 +1623,8 @@ symbol.
 *) 06 mar 2008: crash with encoding of strings fixed
 *) 02 feb 2008: support for international text chunks added (iTXt)
 *) 23 jan 2008: small cleanups, and #defines to divide code in sections
-*) 20 jan 2008: support for unknown chunks allowing using LodePNG for an editor.
+*) 20 jan 2008: support for unknown chunks allowing /*CU2CL Warning: using namespace not allowed in the OpenCL Kernel File*/ 
+ // using LodePNG for an editor.
 *) 18 jan 2008: support for tIME and pHYs chunks added to encoder and decoder.
 *) 17 jan 2008: ability to encode and decode compressed zTXt chunks added
     Also various fixes, such as in the deflate and the padding bits code.

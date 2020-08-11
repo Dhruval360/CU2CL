@@ -73,29 +73,14 @@ void __cu2cl_ScanDevices() {
 
 
 void  __cu2cl_ResetDevice() {
-   if (__cu2cl_AllDevices_size == 0) {
-       __cu2cl_ScanDevices();
-   }
-   //only switch devices if it's a valid choice
-   if (0 < __cu2cl_AllDevices_size) {
-       //Assume auto-initialized queue and context, and free them
        clReleaseCommandQueue(__cu2cl_CommandQueue);
        clReleaseContext(__cu2cl_Context);
-       //update device and platform references
-       __cu2cl_AllDevices_curr_idx = 0;
-       __cu2cl_Device = __cu2cl_AllDevices[0];
-       clGetDeviceInfo(__cu2cl_Device, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &__cu2cl_Platform, NULL);
-       //and make a new context and queue for the selected device
-       __cu2cl_Context = clCreateContext(NULL, 1, &__cu2cl_Device, NULL, NULL, NULL);
-       __cu2cl_CommandQueue = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
-   }
 }
 
 
 cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end) {
     cl_int ret;
     cl_ulong s, e;
-    float fs, fe;
     ret |= clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &s, NULL);
     ret |= clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &e, NULL);
     s = e - s;

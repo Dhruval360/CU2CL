@@ -150,7 +150,7 @@ __cu2cl_Init();
     // asynchronously issue work to the GPU (all to stream 0)
     sdkStartTimer(&timer);
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &start);
-//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event start: %s\n", getErrorString(err));
     err = clEnqueueWriteBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
 //printf("Memory copy from host variable a to device variable d_a in stream __cu2cl_CommandQueue: %s\n", getErrorString(err));
     err = clSetKernelArg(__cu2cl_Kernel_increment_kernel, 0, sizeof(int *), &d_a);
@@ -168,7 +168,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_increment_kern
     clEnqueueReadBuffer(__cu2cl_CommandQueue, d_a, CL_FALSE, 0, nbytes, a, 0, NULL, NULL);
 //printf("Memory copy from device variable a to host variable d_a in stream __cu2cl_CommandQueue: %s\n", getErrorString(err));
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &stop);
-//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event stop: %s\n", getErrorString(err));
     sdkStopTimer(&timer);
 
     // have CPU do some work while waiting for stage 1 to finish

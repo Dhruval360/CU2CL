@@ -13,9 +13,6 @@
 cl_kernel __cu2cl_Kernel_sobelGpu;
 cl_program __cu2cl_Program_sobelEdgeFilterpng_cu;
 cl_int err;
-extern cl_kernel __cu2cl_Kernel_rgba_to_greyscale;
-extern cl_program __cu2cl_Program_grayscale_cu;
-extern cl_int err;
 extern const char *progSrc;
 extern size_t progLen;
 

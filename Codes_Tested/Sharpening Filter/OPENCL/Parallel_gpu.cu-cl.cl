@@ -28,7 +28,7 @@ __kernel void sharpeningFilter(__global unsigned char* srcImage, __global unsign
     int x = get_group_id(0) * get_local_size(0) + get_local_id(0);
     int y = get_group_id(1) * get_local_size(1) + get_local_id(1);
 
-    float kernel[FILTER_WIDTH][FILTER_HEIGHT] = { -1, -1, -1, -1, 9, -1, -1, -1, -1 };
+    float kernel[FILTER_WIDTH][FILTER_HEIGHT] = { {-1, -1, -1}, {-1, 9, -1}, {-1, -1, -1} };
     // only threads inside image will write results
     if ((x >= FILTER_WIDTH / 2) && (x < (width - FILTER_WIDTH / 2)) && (y >= FILTER_HEIGHT / 2) && (y < (height - FILTER_HEIGHT / 2)))
     {

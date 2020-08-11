@@ -27,7 +27,7 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7.5.0
 Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
 warning: argument unused during compilation: '-disable-free'
 clang Invocation:
- "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/cu2cl-tool" "-cc1" "-triple" "x86_64-unknown-linux-gnu" "-fsyntax-only" "-disable-free" "-disable-llvm-verifier" "-main-file-name" "redEYECPU.cu" "-mrelocation-model" "static" "-mdisable-fp-elim" "-fmath-errno" "-masm-verbose" "-mconstructor-aliases" "-munwind-tables" "-fuse-init-array" "-target-cpu" "x86-64" "-v" "-resource-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4" "-include" "cuda_runtime.h" "-D" "GPU_ON" "-D" "CUDA_SAFE_CALL(X)=X" "-D" "__CUDACC__" "-D" "__SM_32_INTRINSICS_H__" "-D" "__SM_35_INTRINSICS_H__" "-D" "__SURFACE_INDIRECT_FUNCTIONS_H__" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include" "-I" "/usr/local/include" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" "-I" "/usr/include/x86_64-linux-gnu" "-I" "/usr/include" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include" "-internal-externc-isystem" "/usr/include/x86_64-linux-gnu" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-fdeprecated-macro" "-fdebug-compilation-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build" "-ferror-limit" "19" "-fmessage-length" "0" "-mstackrealign" "-fobjc-runtime=gcc" "-fcxx-exceptions" "-fexceptions" "-fdiagnostics-show-option" "-vectorize-slp" "-x" "cuda" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu"
+ "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/cu2cl-tool" "-cc1" "-triple" "x86_64-unknown-linux-gnu" "-fsyntax-only" "-disable-free" "-disable-llvm-verifier" "-main-file-name" "redEYECPU.cu" "-mrelocation-model" "static" "-mdisable-fp-elim" "-fmath-errno" "-masm-verbose" "-mconstructor-aliases" "-munwind-tables" "-fuse-init-array" "-target-cpu" "x86-64" "-v" "-resource-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4" "-include" "cuda_runtime.h" "-D" "GPU_ON" "-D" "CUDA_SAFE_CALL(X)=X" "-D" "__CUDACC__" "-D" "__SM_32_INTRINSICS_H__" "-D" "__SM_35_INTRINSICS_H__" "-D" "__SURFACE_INDIRECT_FUNCTIONS_H__" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include" "-I" "/usr/local/include" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" "-I" "/usr/include/x86_64-linux-gnu" "-I" "/usr/include" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include" "-internal-externc-isystem" "/usr/include/x86_64-linux-gnu" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-fdeprecated-macro" "-fdebug-compilation-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build" "-ferror-limit" "19" "-fmessage-length" "0" "-mstackrealign" "-fobjc-runtime=gcc" "-fcxx-exceptions" "-fexceptions" "-fdiagnostics-show-option" "-vectorize-slp" "-x" "cuda" "/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu"
 
 clang -cc1 version 3.4 based upon LLVM 3.4svn default target x86_64-unknown-linux-gnu
 ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu"
@@ -50,9 +50,9 @@ ignoring duplicate directory "/usr/include"
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:19:18: CU2CL Untranslated: Template-dependent host call
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:41:3: CU2CL Untranslated: Template-dependent host call
-In file included from /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:9:
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:19:18: CU2CL Untranslated: Template-dependent host call
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:41:3: CU2CL Untranslated: Template-dependent host call
+In file included from /home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:9:
 In file included from /usr/include/opencv2/core/core.hpp:49:
 In file included from /usr/include/opencv2/core/types_c.h:87:
 In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
@@ -129,15 +129,10 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:434:5: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:444:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:454:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:463:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu:524:30: CU2CL Unsupported: Unsupported CUDA call: cudaGetLastError
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:15:1: CU2CL Untranslated: Unable to translate template function
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu Translation Time: 89 microseconds
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/utils.h:15:1: CU2CL Untranslated: Unable to translate template function
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu Translation Time: 87 microseconds
 20 errors generated.
-Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu.
+Error while processing /home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEYECPU.cu.
 clang version 3.4 (tags/RELEASE_34/final)
 Target: x86_64-unknown-linux-gnu
 Thread model: posix
@@ -151,7 +146,7 @@ Found candidate GCC installation: /usr/lib/gcc/x86_64-linux-gnu/7.5.0
 Selected GCC installation: /usr/lib/gcc/x86_64-linux-gnu/5.5.0
 warning: argument unused during compilation: '-disable-free'
 clang Invocation:
- "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/cu2cl-tool" "-cc1" "-triple" "x86_64-unknown-linux-gnu" "-fsyntax-only" "-disable-free" "-disable-llvm-verifier" "-main-file-name" "redEyeGPU.cu" "-mrelocation-model" "static" "-mdisable-fp-elim" "-fmath-errno" "-masm-verbose" "-mconstructor-aliases" "-munwind-tables" "-fuse-init-array" "-target-cpu" "x86-64" "-v" "-resource-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4" "-include" "cuda_runtime.h" "-D" "GPU_ON" "-D" "CUDA_SAFE_CALL(X)=X" "-D" "__CUDACC__" "-D" "__SM_32_INTRINSICS_H__" "-D" "__SM_35_INTRINSICS_H__" "-D" "__SURFACE_INDIRECT_FUNCTIONS_H__" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include" "-I" "/usr/local/include" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" "-I" "/usr/include/x86_64-linux-gnu" "-I" "/usr/include" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include" "-internal-externc-isystem" "/usr/include/x86_64-linux-gnu" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-fdeprecated-macro" "-fdebug-compilation-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build" "-ferror-limit" "19" "-fmessage-length" "0" "-mstackrealign" "-fobjc-runtime=gcc" "-fcxx-exceptions" "-fexceptions" "-fdiagnostics-show-option" "-vectorize-slp" "-x" "cuda" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu"
+ "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/cu2cl-tool" "-cc1" "-triple" "x86_64-unknown-linux-gnu" "-fsyntax-only" "-disable-free" "-disable-llvm-verifier" "-main-file-name" "redEyeGPU.cu" "-mrelocation-model" "static" "-mdisable-fp-elim" "-fmath-errno" "-masm-verbose" "-mconstructor-aliases" "-munwind-tables" "-fuse-init-array" "-target-cpu" "x86-64" "-v" "-resource-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4" "-include" "cuda_runtime.h" "-D" "GPU_ON" "-D" "CUDA_SAFE_CALL(X)=X" "-D" "__CUDACC__" "-D" "__SM_32_INTRINSICS_H__" "-D" "__SM_35_INTRINSICS_H__" "-D" "__SURFACE_INDIRECT_FUNCTIONS_H__" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include" "-I" "/usr/local/include" "-I" "/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" "-I" "/usr/include/x86_64-linux-gnu" "-I" "/usr/include" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/backward" "-internal-isystem" "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/x86_64-linux-gnu/c++/5.5.0" "-internal-isystem" "/usr/local/include" "-internal-isystem" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/../lib/clang/3.4/include" "-internal-externc-isystem" "/usr/include/x86_64-linux-gnu" "-internal-externc-isystem" "/include" "-internal-externc-isystem" "/usr/include" "-fdeprecated-macro" "-fdebug-compilation-dir" "/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build" "-ferror-limit" "19" "-fmessage-length" "0" "-mstackrealign" "-fobjc-runtime=gcc" "-fcxx-exceptions" "-fexceptions" "-fdiagnostics-show-option" "-vectorize-slp" "-x" "cuda" "/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu"
 
 clang -cc1 version 3.4 based upon LLVM 3.4svn default target x86_64-unknown-linux-gnu
 ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/5.5.0/../../../../include/c++/5.5.0/x86_64-linux-gnu"
@@ -174,7 +169,7 @@ ignoring duplicate directory "/usr/include"
  /usr/include/x86_64-linux-gnu
  /usr/include
 End of search list.
-In file included from /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:9:
+In file included from /home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:9:
 In file included from /usr/include/opencv2/core/core.hpp:49:
 In file included from /usr/include/opencv2/core/types_c.h:87:
 In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
@@ -251,14 +246,14 @@ In file included from /usr/lib/gcc/x86_64-linux-gnu/4.8/include/emmintrin.h:35:
   return (__m128) __builtin_ia32_cmpnltss ((__v4sf)__A, (__v4sf)__B);
                   ^
 fatal error: too many errors emitted, stopping now [-ferror-limit=]
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 5!
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 8!
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 9!
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:51: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:40: CU2CL Note: Fast-tracked dim3 type without cast
-/home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu Translation Time: 116 microseconds
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 5!
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 8!
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:5: CU2CL Note: Inserted temporary variable for kernel literal argument 9!
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:51: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu:646:40: CU2CL Note: Fast-tracked dim3 type without cast
+/home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu Translation Time: 113 microseconds
 20 errors generated.
-Error while processing /home/hetero/Abhishek_Shyam/CU2CL/cu2cl-build/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu.
+Error while processing /home/hetero/Dhruval/CU2CL/Codes_Tested/Red Eye Removal Filter/CUDA/redEyeGPU.cu.
 CU2CL DEBUG: Skipping propagated CallExpr translation on CUDA function: cudaMalloc!
 CU2CL DEBUG: Rejected propagation of DeclRefExpr d_g not matching Decl d_r
 CU2CL DEBUG: Rejected propagation of DeclRefExpr d_b not matching Decl d_r

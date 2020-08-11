@@ -23,13 +23,11 @@ void __cu2cl_Init();
 void __cu2cl_Cleanup();
 size_t __cu2cl_LoadProgramSource(const char *filename, const char **progSrc);
 
-cl_int __cu2cl_Memset(cl_mem devPtr, int value, size_t count);
-
 const char *getErrorString(cl_int error);
 
-void __cu2cl_Init_sobelEdgeFilterpng_cu();
+void __cu2cl_Init_pitch_cu();
 
-void __cu2cl_Cleanup_sobelEdgeFilterpng_cu();
+void __cu2cl_Cleanup_pitch_cu();
 
 
 #ifdef __cplusplus
@@ -37,6 +35,7 @@ void __cu2cl_Cleanup_sobelEdgeFilterpng_cu();
 #endif
 #include <vector>
 
+#define cu2cl_ceil(a,b) (a%b == 0)? (a/b) : (a/b)+1
 #define char1 cl_char
 #define uchar1 cl_uchar
 #define short1 cl_short

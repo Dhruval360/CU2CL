@@ -203,7 +203,7 @@ __cu2cl_Init();
 
     // start to count execution time of GPU version
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &start);
-//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event start: %s\n", getErrorString(err));
     // Allocate memory space on the device 
     cl_mem d_a;
 cl_mem d_b;
@@ -276,7 +276,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_gpu_matrix_mul
 //printf("clFinish return message = %s\n", getErrorString(err));
     // time counting terminate
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &stop);
-//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event stop: %s\n", getErrorString(err));
     clWaitForEvents(1, &stop);
 
     // compute time elapse on GPU computing
@@ -285,12 +285,12 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_gpu_matrix_mul
 
     // start the CPU version
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &start);
-//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event start: %s\n", getErrorString(err));
 
     cpu_matrix_mult(h_a, h_b, h_cc, m, n, k);
 
     err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &stop);
-//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event stop: %s\n", getErrorString(err));
     clWaitForEvents(1, &stop);
     __cu2cl_EventElapsedTime(&cpu_elapsed_time_ms, start, stop);
     printf("Time elapsed on matrix multiplication of %dx%d . %dx%d on CPU: %f ms.\n\n", m, n, n, k, cpu_elapsed_time_ms);

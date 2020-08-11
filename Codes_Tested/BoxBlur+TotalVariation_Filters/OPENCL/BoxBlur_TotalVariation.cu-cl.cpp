@@ -231,7 +231,7 @@ cl_mem d_bluelight;
 //printf("clCreateUserEvent for the event stop: %s\n", getErrorString(err));
 
 	err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &start);
-//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event start: %s\n", getErrorString(err));
 
 	cl_command_queue s1, s2, s3, s4, s5, s6; // For parallelizing memory copies and kernel launches
 	s1 = clCreateCommandQueue(__cu2cl_Context, __cu2cl_Device, CL_QUEUE_PROFILING_ENABLE, &err);
@@ -486,7 +486,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_recombineChann
 
 	float milliseconds = 0;
 	err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &stop);
-//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event stop: %s\n", getErrorString(err));
 	clWaitForEvents(1, &stop);
 	__cu2cl_EventElapsedTime(&milliseconds, start, stop);
 

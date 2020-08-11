@@ -46,7 +46,6 @@ cl_int __cu2cl_MallocHost(void **ptr, size_t size, cl_mem *clMem) {
 cl_int __cu2cl_EventElapsedTime(float *ms, cl_event start, cl_event end) {
     cl_int ret;
     cl_ulong s, e;
-    float fs, fe;
     ret |= clGetEventProfilingInfo(start, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &s, NULL);
     ret |= clGetEventProfilingInfo(end, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &e, NULL);
     s = e - s;

@@ -7,11 +7,3 @@
 *
 *   You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
-__kernel void __cu2cl_Memset(__global uchar *ptr, uchar value, uint num) {
-    size_t id = get_global_id(0);
-    if (get_global_id(0) < num) {
-        ptr[id] = value;
-    }
-}
-
-

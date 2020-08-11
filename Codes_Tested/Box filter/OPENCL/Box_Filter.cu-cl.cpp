@@ -149,7 +149,7 @@ cl_mem d_output;
 
         // Start time
         err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &start);
-//printf("clEnqueMarker for the event start: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event start: %s\n", getErrorString(err));
 
         // Run BoxFilter kernel on CUDA 
 /*CU2CL Note -- Fast-tracked dim3 type without cast*/
@@ -174,7 +174,7 @@ err = clEnqueueNDRangeKernel(__cu2cl_CommandQueue, __cu2cl_Kernel_boxFilter, 3, 
 
         // Stop time
         err = clEnqueueMarkerWithWaitList(__cu2cl_CommandQueue, 0, 0, &stop);
-//printf("clEnqueMarker for the event stop: %s\n", getErrorString(err));
+//printf("clEnqueMarkerWithWaitList for the event stop: %s\n", getErrorString(err));
 
         //Copy data from device memory to output image
         err = clEnqueueReadBuffer(__cu2cl_CommandQueue, d_output, CL_TRUE, 0, outputSize, output.ptr(), 0, NULL, NULL);
